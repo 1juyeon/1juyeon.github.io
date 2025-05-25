@@ -33,3 +33,15 @@ a:hover {
 .page__content h3 {
   color: #1F2D3D;
 }
+/* 글 제목 링크 스타일 */
+h2.archive__item-title a {
+  color: #1A4D7A; /* 차분한 짙은 파란색 */
+  text-decoration: none; /* 밑줄 제거 */
+  font-weight: 600; /* 약간 두껍게 */
+}
+
+/* 마우스 올렸을 때 */
+h2.archive__item-title a:hover {
+  color: #0F3A5A; /* 더 어두운 파란색 */
+  text-decoration: underline; /* hover 시만 밑줄 표시 */
+}

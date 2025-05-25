@@ -59,7 +59,7 @@ plugins:
 author:
   name   : "Juyeon Won"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "My awesome biography constrained to a sentence or two goes here."
+  bio    : "안녕하세요! 성장하는 주니어 개발자 원주연 입니다."
   links:
     - label: "Website"
       icon: "fas fa-fw fa-link"

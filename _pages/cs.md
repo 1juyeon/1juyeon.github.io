@@ -1,7 +1,7 @@
 ---
-title: "TIL"
+title: "CS"
 layout: category
-permalink: /til/
+permalink: /cs/
 author_profile: true
-taxonomy: til
+taxonomy: cs
 ---

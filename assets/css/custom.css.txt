@@ -1,0 +1,35 @@
+/* 🎨 Clean White Background with Pastel Blue Highlights */
+
+/* 전체 배경: 흰색 */
+body {
+  background-color: #ffffff;
+  color: #1F2D3D; /* 진한 텍스트 */
+}
+
+/* 링크 색: 하늘색 */
+a {
+  color: #87CEFA; /* Light Sky Blue */
+}
+
+a:hover {
+  color: #4682B4; /* Steel Blue */
+}
+
+/* 헤더 & 푸터 배경: 연한 하늘색 */
+.site-header,
+.page__footer {
+  background-color: #F0F8FF; /* Alice Blue */
+  color: #1F2D3D;
+}
+
+/* 푸터 링크 색도 통일 */
+.page__footer a {
+  color: #1F2D3D;
+}
+
+/* 제목 색 */
+.page__content h1,
+.page__content h2,
+.page__content h3 {
+  color: #1F2D3D;
+}

@@ -1,4 +1,10 @@
-
+---
+title: "250526 ajax_async_option"
+date: 2025-05-26 10:00:00 +0900
+categories: [til]
+tags: [ajax 비동기, 동기, async]
+layout: single
+---
 # jQuery `$.ajax()` `async` 옵션 정리
 
 > **목적**  

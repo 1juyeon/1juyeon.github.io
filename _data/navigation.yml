@@ -1,6 +1,6 @@
 main:
   - title: "Error"
-    url: /errors/
+    url: /error/
   - title: "Note"
     url: /note/
   - title: "Til"

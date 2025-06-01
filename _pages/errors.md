@@ -1,7 +1,7 @@
 ---
-title: "Errors"
+title: "Error"
 layout: category
-permalink: /errors/
+permalink: /error/
 author_profile: true
 taxonomy: error
 ---

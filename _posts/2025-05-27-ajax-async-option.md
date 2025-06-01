@@ -1,15 +1,14 @@
 ---
 title: "250526 ajax_async_option"
 date: 2025-05-26 10:00:00 +0900
-categories: [til]
+categories: [errors]
 tags: [ajax 비동기, 동기, async]
 layout: single
 ---
 # jQuery `$.ajax()` `async` 옵션 정리
 
 > **목적**  
-> `async: true → false`(비동기 → 동기)로 변경하면서 나타난 현상과 Ajax 기본 개념을 한 문서에 정리한다.  
-> 이 파일을 그대로 복사‑붙여넣기 하거나 `.md` 파일로 저장해서 사용하면 된다.
+> `async: true → false`(비동기 → 동기)로 변경하면서 나타난 현상과 Ajax 기본 개념
 
 ---
 

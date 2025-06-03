@@ -61,7 +61,7 @@ author:
   avatar : "/assets/images/bio-photo.jpg"
   bio    : "안녕하세요! 성장하는 주니어 개발자 원주연 입니다."
   links:
-    - label: "portfolio"
+    - label: "Portfolio"
       icon: "fas fa-fw fa-link"
       url: "https://"
     - label: "GitHub"

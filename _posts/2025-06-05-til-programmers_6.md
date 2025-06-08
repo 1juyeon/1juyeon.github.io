@@ -2,11 +2,11 @@
 title: "250605 Programmers 순서 쌍의 개수"
 date: 2025-06-05 21:00:00 +0900
 categories: [til]
-tags: [Programmers, 코딩테스트, 입문, 코테]
+tags: [Programmers, 코딩테스트, 기초, 코테]
 layout: single
 ---
 
-Programmers 코딩 테스트 입문 문제 풀이입니다.
+Programmers 코딩 테스트 기초 문제 풀이입니다.
 
 ---
 

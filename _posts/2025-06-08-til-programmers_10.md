@@ -150,8 +150,9 @@ int solution(int balls, int share) {
 
     return (int)result;
 }
-```
-```c
+
+///////////////////////////////////
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 ---
-title: "250605 Programmers 순서 쌍의 개수"
+title: "[TIL] 250605 Programmers 순서 쌍의 개수"
 date: 2025-06-05 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 기초, 코테]

@@ -1,5 +1,5 @@
 ---
-title: "250529 Programmers 양꼬치"
+title: "[TIL] 250529 Programmers 양꼬치"
 date: 2025-05-25 10:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

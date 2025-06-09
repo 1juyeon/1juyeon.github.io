@@ -1,5 +1,5 @@
 ---
-title: "250601 Programmers 외계행성의 나이"
+title: "[TIL] 250601 Programmers 외계행성의 나이"
 date: 2025-06-01 10:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

@@ -1,5 +1,5 @@
 ---
-title: "250606 Programmers 모스부호(1)"
+title: "[TIL] 250606 Programmers 모스부호(1)"
 date: 2025-06-06 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

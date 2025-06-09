@@ -1,5 +1,5 @@
 ---
-title: "250530 Programmers 배열 자르기"
+title: "[TIL] 250530 Programmers 배열 자르기"
 date: 2025-05-30 10:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

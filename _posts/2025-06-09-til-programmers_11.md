@@ -1,5 +1,5 @@
 ---
-title: "[TIL] 250609 Programmers 점의 위치 구하기"
+title: "250609 Programmers 점의 위치 구하기"
 date: 2025-06-09 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

@@ -1,5 +1,5 @@
 ---
-title: "[TIL] 250608 Programmers 구슬을 나누는 경우의 수"
+title: "250608 Programmers 구슬을 나누는 경우의 수"
 date: 2025-06-08 16:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

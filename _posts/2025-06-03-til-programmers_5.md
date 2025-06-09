@@ -1,5 +1,5 @@
 ---
-title: "[TIL] 250603 Programmers 진료 순서 정하기"
+title: "250603 Programmers 진료 순서 정하기"
 date: 2025-06-03 10:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테, sort, 내림차순]

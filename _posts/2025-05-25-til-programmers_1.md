@@ -1,5 +1,5 @@
 ---
-title: "[TIL] 250525 Programmers 문자 반복 출력하기"
+title: "250525 Programmers 문자 반복 출력하기"
 date: 2025-05-25 10:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

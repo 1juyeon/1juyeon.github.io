@@ -1,5 +1,5 @@
 ---
-title: "[TIL] 250607 Programmers 가위 바위 보"
+title: "250607 Programmers 가위 바위 보"
 date: 2025-06-07 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

@@ -1,5 +1,5 @@
 ---
-title: "250610 Programmers 2차원"
+title: "250610 Programmers 2차원으로 만들기"
 date: 2025-06-10 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

@@ -1,6 +1,6 @@
 ---
 title: "250618 Programmers "
-date: 2025-06-18 21:00:00 +0900
+date: 2025-06-17 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 기초, 코테]
 layout: single

@@ -98,8 +98,7 @@ Programmers 코딩 테스트 입문 문제 풀이입니다.
 
 ## * 내 풀이 (C 언어)
 
-
-```
+```c
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -132,8 +131,9 @@ int solution(int dot[], size_t dot_len) {
 // dot_len은 배열 dot의 길이입니다.
 int solution(int dot[], size_t dot_len) 
 {	
-    
-int ans[2][2] = {{3,2}, {4,1}};
+    {% raw %}
+int ans[2][2] = {% raw %}{{3,2}{% endraw %}, {4,1}};
+{% endraw %}
     return ans[dot[0] > 0][dot[1] > 0];
 }
 ```
@@ -171,7 +171,7 @@ int ans[2][2] = {
 
 | 항목     | 함수                          | 배열                         |
 |----------|-------------------------------|------------------------------|
-| 선언     | `int func() { ... }`         | `int arr[2][2] = {{...}};`   |
+| 선언     | `int func() { ... }`         | `int arr[2][2] = {% raw %}{{...}{% endraw %}};`   |
 | 역할     | 어떤 동작(계산, 처리) 수행    | 여러 값 저장 및 관리         |
 | 접근 방법 | `func()`                     | `arr[i][j]` (인덱스 접근)     |
 

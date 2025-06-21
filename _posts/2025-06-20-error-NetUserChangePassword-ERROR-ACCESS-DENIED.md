@@ -2,7 +2,7 @@
 title: "250620 NetUserChangePassword Windows 11 24H2 오류"
 date: 2025-06-20 10:00:00 +0900
 categories: [error]
-tags: [windows, NetUserChangePassword, api, 24H2, windows server, 21H2, NetUserSetInfo]
+tags: [windows, NetUserChangePassword, api, "24H2", windows server, "21H2", NetUserSetInfo]
 layout: single
 ---
 

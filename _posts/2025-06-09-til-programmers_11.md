@@ -130,10 +130,8 @@ int solution(int dot[], size_t dot_len) {
 
 // dot_len은 배열 dot의 길이입니다.
 int solution(int dot[], size_t dot_len) 
-{	
-    {% raw %}
-int ans[2][2] = {% raw %}{{3,2}{% endraw %}, {4,1}};
-{% endraw %}
+{
+    int ans[2][2] = {{3,2}, {4,1}};
     return ans[dot[0] > 0][dot[1] > 0];
 }
 ```
@@ -171,7 +169,7 @@ int ans[2][2] = {
 
 | 항목     | 함수                          | 배열                         |
 |----------|-------------------------------|------------------------------|
-| 선언     | `int func() { ... }`         | `int arr[2][2] = {% raw %}{{...}{% endraw %}};`   |
+| 선언     | `int func() { ... }`         | `int arr[2][2] = {{...}};`   |
 | 역할     | 어떤 동작(계산, 처리) 수행    | 여러 값 저장 및 관리         |
 | 접근 방법 | `func()`                     | `arr[i][j]` (인덱스 접근)     |
 

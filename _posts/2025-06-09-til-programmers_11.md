@@ -98,7 +98,7 @@ Programmers 코딩 테스트 입문 문제 풀이입니다.
 
 ## * 내 풀이 (C 언어)
 
-{% raw %}
+
 ```
 #include <stdio.h>
 #include <stdbool.h>
@@ -132,13 +132,11 @@ int solution(int dot[], size_t dot_len) {
 // dot_len은 배열 dot의 길이입니다.
 int solution(int dot[], size_t dot_len) 
 {	
-    {% raw %}
+    
 int ans[2][2] = {{3,2}, {4,1}};
-{% endraw %}
     return ans[dot[0] > 0][dot[1] > 0];
 }
 ```
-{% endraw %}
 
 
 ## ✍️ 회고

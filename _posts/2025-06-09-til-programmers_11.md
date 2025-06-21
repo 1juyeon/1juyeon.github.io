@@ -98,7 +98,8 @@ Programmers 코딩 테스트 입문 문제 풀이입니다.
 
 ## * 내 풀이 (C 언어)
 
-```c
+{% raw %}
+```
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -137,6 +138,7 @@ int ans[2][2] = {{3,2}, {4,1}};
     return ans[dot[0] > 0][dot[1] > 0];
 }
 ```
+{% endraw %}
 
 
 ## ✍️ 회고

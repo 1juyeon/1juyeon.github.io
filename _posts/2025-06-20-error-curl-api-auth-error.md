@@ -1,5 +1,5 @@
 ---
-title: "250620 curl api 카메라 인증 오류"
+title: "250620 curl api auth error"
 date: 2025-06-20 10:00:00 +0900
 categories: [error]
 tags: [curl, api, 인증, digest, basic]

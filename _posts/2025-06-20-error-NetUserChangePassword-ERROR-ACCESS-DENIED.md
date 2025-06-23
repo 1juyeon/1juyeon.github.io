@@ -1,5 +1,5 @@
 ---
-title: "250620 NetUserChangePassword Windows 11 24H2 오류"
+title: "250620 NetUserChangePassword ERROR ACCESS DENIED"
 date: 2025-06-20 10:00:00 +0900
 categories: [error]
 tags: [windows, NetUserChangePassword, api, "24H2", windows server, "21H2", NetUserSetInfo]

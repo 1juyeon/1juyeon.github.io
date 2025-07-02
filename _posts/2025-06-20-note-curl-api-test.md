@@ -1,5 +1,5 @@
 ---
-title: "250620 curl api auth error"
+title: "[Note] curl api test "
 date: 2025-06-20 10:00:00 +0900
 categories: [error]
 tags: [curl, api, 인증, digest, basic]
@@ -130,5 +130,3 @@ curl --digest -u "admin:1234" -k "https://192.168.0.100/stw-cgi/system.cgi?..."
 
 ---
 
-📌 작성일: 2025-06-09  
-🧠 작성자: ChatGPT + 사용자 질의 기반  

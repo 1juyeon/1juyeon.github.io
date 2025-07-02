@@ -1,5 +1,5 @@
 ---
-title: "curl + OpenSSL 직접 빌드 기록 (Digest 인증용)"
+title: "[Note] curl + OpenSSL 직접 빌드 기록 (Digest 인증용)"
 date: 2025-06-25 20:00:00 +0900
 categories: [note]
 layout: single

@@ -1,5 +1,5 @@
 ---
-title: "Digest 인증 기반 카메라 API 테스트 결과 정리"
+title: "[Error] Digest 인증 기반 카메라 API 테스트 결과 정리"
 date: 2025-06-25 20:00:00 +0900
 categories: [error]
 layout: single

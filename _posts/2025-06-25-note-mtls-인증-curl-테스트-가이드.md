@@ -1,5 +1,5 @@
 ---
-title: "mTLS 인증 curl 테스트 가이드"
+title: "[Note] mTLS 인증 curl 테스트 가이드"
 date: 2025-06-25 20:00:00 +0900
 categories: [note]
 layout: single

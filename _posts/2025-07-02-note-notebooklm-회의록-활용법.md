@@ -1,5 +1,5 @@
 ---
-title: "NotebookLM 기반 AI 회의록 활용법"
+title: "[Note] NotebookLM 기반 AI 회의록 활용법"
 date: 2025-07-02 20:00:00 +0900
 categories: [note]
 layout: single

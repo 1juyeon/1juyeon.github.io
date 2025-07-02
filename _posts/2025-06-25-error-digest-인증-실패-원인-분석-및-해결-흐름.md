@@ -1,5 +1,5 @@
 ---
-title: "Digest 인증 실패 원인 분석 및 해결 흐름"
+title: "[Error] Digest 인증 실패 원인 분석 및 해결 흐름"
 date: 2025-06-25 20:00:00 +0900
 categories: [error]
 layout: single

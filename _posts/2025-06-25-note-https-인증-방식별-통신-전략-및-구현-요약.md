@@ -1,5 +1,5 @@
 ---
-title: "HTTPS 인증 방식별 통신 전략 및 구현 요약"
+title: "[Note] HTTPS 인증 방식별 통신 전략 및 구현 요약"
 date: 2025-06-25 20:00:00 +0900
 categories: [note]
 layout: single

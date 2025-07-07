@@ -1,5 +1,5 @@
 ---
-title: "curl + OpenSSL 빌드 전 준비사항 및 CMake 설정 정리"
+title: "[Note] curl + OpenSSL 빌드 방법 정리 no shared 옵션 빼고"
 date: 2025-06-24 20:00:00 +0900
 categories: [note]
 layout: single
@@ -231,7 +231,7 @@ curl-install/
 ```
 * no-shared 포함 빌드는 libssl-3-x64.dll / libcrypto-3-x64.dll 필요없음
 * no-shared 없는 빌드는 openssl 에서 빌드한 두 파일이 필요함
-* 
+
 ---
 
 ## ✅ 완료 요약

@@ -132,7 +132,7 @@ Features: SSL OpenSSL ...
 ## 5️⃣ Digest 인증 테스트
 
 ```bash
-curl --digest -u admin:0000 -k "https://192.168.40.157:443/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --digest -u <user>:<password> -k "https://<device-host>:443/<api-path>"
 ```
 
 - SSPI 비활성화 → Windows 인증 비의존

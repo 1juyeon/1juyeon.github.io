@@ -57,14 +57,14 @@ net localgroup administrators
 ```cpp
 NETRESOURCE nr = {0};
 nr.dwType = RESOURCETYPE_ANY;
-nr.lpRemoteName = L"\\192.168.40.90\IPC$";
+nr.lpRemoteName = L"\\<server-host>\IPC$";
 WNetAddConnection2(&nr, L"관리자비밀번호", L"관리자계정", 0);
 ```
 
 **CMD에서도 직접 확인 가능:**
 
 ```cmd
-net use \192.168.40.90\ipc$ /user:관리자계정 관리자비밀번호
+net use \<server-host>\ipc$ /user:관리자계정 관리자비밀번호
 ```
 
 **성공 시:** `명령을 잘 실행했습니다.`  
@@ -155,7 +155,7 @@ Windows 로그 > 보안
 
 - IPC 연결 확인
   ```cmd
-  net use \\192.168.40.90\ipc$ /user:administrator core2580@!
+  net use \\<server-host>\ipc$ /user:administrator <password>
   ``` 
 - UAC 설정 확인
   - HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System `LocalAccountTokenFilterPolicy (DWORD)` 생성 또는 수정 → **값 1로 설정**
@@ -166,7 +166,7 @@ Windows 로그 > 보안
 - 인바운드 445 포트 관련 규칙 확인
 - 445 포트 열려있는지 확인
   ```cmd
-  telnet 192.168.40.90 445
+  telnet <server-host> 445
   ``` 
 - 계정 확인을 위한 명령어들
    ```cmd

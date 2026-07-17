@@ -10,10 +10,10 @@ layout: single
 
 ## 🧭 문제 상황의 시작
 
-Hanwha Vision 카메라 장치에 HTTPS 기반의 Digest 인증 API 요청을 보내는 과정에서 아래와 같은 명령어를 사용했습니다:
+특정 HTTPS 장비에 HTTPS 기반의 Digest 인증 API 요청을 보내는 과정에서 아래와 같은 명령어를 사용했습니다:
 
 ```bash
-curl --digest -u "admin:0000" -k "https://192.168.40.157:443/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>"
 ```
 
 하지만 응답 결과로 다음과 같은 오류가 발생했습니다:
@@ -57,7 +57,7 @@ Postman은 Windows의 SSPI를 사용하지 않고 자체 인증 처리 로직을
 리눅스 환경의 curl은 OpenSSL 기반으로 Digest 인증을 자체적으로 처리하므로, Windows SSPI 영향 없이 테스트 가능합니다.
 
 ```bash
-curl --digest -u "admin:0000" -k "https://..."
+curl --digest -u "<user>:<password>" -k "https://..."
 ```
 
 ### ✅ 테스트 3: 서버가 SHA-256이 아닌 MD5만 제공하는 경우

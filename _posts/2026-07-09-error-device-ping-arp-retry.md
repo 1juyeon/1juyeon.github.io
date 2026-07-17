@@ -1,5 +1,5 @@
 ---
-title: "[Error] 장비 ping 테스트가 ARP 캐시 때문에 실패처럼 보일 때"
+title: "[Error] 네트워크 진단이 ARP 캐시 때문에 실패처럼 보일 때"
 date: 2026-07-09 20:00:00 +0900
 categories: [error]
 tags: [network, ping, arp, retry, diagnostics]
@@ -7,7 +7,7 @@ layout: single
 review_required: true
 ---
 
-# 장비 ping 테스트가 ARP 캐시 때문에 실패처럼 보일 때
+# 네트워크 진단이 ARP 캐시 때문에 실패처럼 보일 때
 
 ## 문제
 

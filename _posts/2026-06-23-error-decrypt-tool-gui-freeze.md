@@ -1,5 +1,5 @@
 ---
-title: "[Error] DB 비밀번호 복구 도구를 Go 단일 exe로 만들며 겪은 GUI 멈춤"
+title: "[Error] 암호화된 설정값 복구 도구를 Go 단일 exe로 만들며 겪은 GUI 멈춤"
 date: 2026-06-23 20:00:00 +0900
 categories: [error]
 tags: [go, win32, gui, decryptor, testing]
@@ -7,11 +7,11 @@ layout: single
 review_required: true
 ---
 
-# DB 비밀번호 복구 도구를 Go 단일 exe로 만들며 겪은 GUI 멈춤
+# 암호화된 설정값 복구 도구를 Go 단일 exe로 만들며 겪은 GUI 멈춤
 
 ## 이번에 한 작업
 
-DB 접속 설정에 들어 있는 `ENC(...)` 값을 복호화할 수 있는 복구 도구를 만들었다.
+운영 설정 파일에 들어 있는 `ENC(...)` 값을 복호화할 수 있는 복구 도구를 만들었다.
 
 처음에는 Java로 CLI와 Swing GUI를 만들었지만, 사용자 PC에 JDK가 없을 수 있고 실행도 번거로웠다. 그래서 최종적으로는 Go로 단일 `.exe`를 만드는 방향으로 바꿨다.
 

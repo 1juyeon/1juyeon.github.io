@@ -55,17 +55,17 @@ WWW-Authenticate: Basic realm="Camera"
 
 ### ✅ 1. Basic 인증 방식 (서버가 Basic을 요구할 때)
 ```bash
-curl -u "admin:1234" -k "https://192.168.0.100/stw-cgi/system.cgi?..."
+curl -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
 ```
 
 ### ✅ 2. Digest 인증 방식 (서버가 Digest를 요구할 때)
 ```bash
-curl --digest -u "admin:1234" -k "https://192.168.0.100/stw-cgi/system.cgi?..."
+curl --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
 ```
 
 ### 🔍 3. 인증 방식 및 요청 흐름 로그 확인
 ```bash
-curl -v -u "admin:1234" -k "https://..."
+curl -v -u "<user>:<password>" -k "https://..."
 ```
 
 - `-v` : 요청 및 응답 헤더 전체 출력
@@ -97,7 +97,7 @@ curl -v -u "admin:1234" -k "https://..."
 
 ## 📁 기타: 인증서 관련 질문에 대한 답변 요약
 
-### 🔸 사설 인증서를 다른 카메라에 복사하면?
+### 🔸 사설 인증서를 다른 장비에 복사하면?
 - 단순히 `.crt` 또는 `.pem`만 복사해도 **다른 장치의 내부 정보는 알 수 없음**
 - 다만, 개인키까지 함께 복사하면 **장치 가장 가능성** 존재
 - 일반적으로는 **장치의 인증 정보, 설정, 비밀번호 등은 포함되어 있지 않음**
@@ -109,9 +109,9 @@ curl -v -u "admin:1234" -k "https://..."
 | 목적 | 명령어 |
 |------|--------|
 | 인증 없이 서버 인증 방식 확인 | `curl -v -k "https://..."` |
-| Basic 인증으로 요청 | `curl -u "admin:pw" -k "https://..."` |
-| Digest 인증으로 요청 | `curl --digest -u "admin:pw" -k "https://..."` |
-| 디버깅 및 인증 로그 확인 | `curl -v -u "admin:pw" -k "https://..."` |
+| Basic 인증으로 요청 | `curl -u "<user>:<password>" -k "https://..."` |
+| Digest 인증으로 요청 | `curl --digest -u "<user>:<password>" -k "https://..."` |
+| 디버깅 및 인증 로그 확인 | `curl -v -u "<user>:<password>" -k "https://..."` |
 
 ---
 
@@ -119,14 +119,13 @@ curl -v -u "admin:1234" -k "https://..."
 
 ```bash
 # 인증 없이 서버 인증 방식 확인
-curl -v -k "https://192.168.0.100/stw-cgi/system.cgi?..."
+curl -v -k "https://<device-host>/<api-path>/system.cgi?..."
 
 # 서버가 Basic이라면 이렇게 요청
-curl -u "admin:1234" -k "https://192.168.0.100/stw-cgi/system.cgi?..."
+curl -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
 
 # 서버가 Digest라면 이렇게 요청
-curl --digest -u "admin:1234" -k "https://192.168.0.100/stw-cgi/system.cgi?..."
+curl --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
 ```
 
 ---
-

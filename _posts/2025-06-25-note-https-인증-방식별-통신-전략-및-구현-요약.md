@@ -8,7 +8,7 @@ layout: single
 
 # 📘 HTTPS 인증 방식별 통신 및 구현 전략 정리 (Basic/Digest vs mTLS)
 
-이 문서는 HTTPS 통신을 사용하는 카메라 API 환경에서 인증 방식에 따라 어떤 설정이 필요한지를 정리한 문서입니다. Basic, Digest 인증과 mTLS(클라이언트 인증서 기반)의 차이점, C++ 코드 변경 포인트, curl 명령어 예시 등을 구체적으로 설명합니다.
+이 문서는 HTTPS 통신을 사용하는 HTTPS 장비 API 환경에서 인증 방식에 따라 어떤 설정이 필요한지를 정리한 문서입니다. Basic, Digest 인증과 mTLS(클라이언트 인증서 기반)의 차이점, C++ 코드 변경 포인트, curl 명령어 예시 등을 구체적으로 설명합니다.
 
 ---
 
@@ -16,7 +16,7 @@ layout: single
 
 ### 🔍 개요
 - 가장 일반적인 인증 방식
-- 카메라 API가 사용자 ID와 비밀번호를 요구하는 방식
+- HTTPS 장비 API가 사용자 ID와 비밀번호를 요구하는 방식
 - 인증 방식은 서버에 따라 Basic 또는 Digest일 수 있음
 - HTTPS 기반이면 Basic 인증도 안전하게 사용 가능 (TLS로 암호화됨)
 
@@ -32,12 +32,12 @@ layout: single
 
 ### 🛠 C++ 코드 예시
 ```cpp
-void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
+void CurlClient::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
 {
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANYSAFE);
 
     char userpwd[URL_MAX_LEN] = { 0, };
-    sprintf_s(userpwd, "%s:%s", m_strID.c_str(), m_strOldPW.c_str());
+    sprintf_s(userpwd, "%s:%s", m_userId.c_str(), m_password.c_str());
     curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd);
 
     curl_easy_setopt(curl, CURLOPT_HEADER, 0);
@@ -50,7 +50,7 @@ void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, 
 ### 🧪 CMD 테스트 명령어
 ```bash
 # HTTPS + Basic 인증 테스트
-curl --anyauth -u "admin:password123" "https://<카메라_IP>/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --anyauth -u "<user>:<password>" "https://<device-host>/<api-path>"
 
 # HTTPBin을 활용한 테스트
 curl --anyauth -u "user:pass" "https://httpbin.org/basic-auth/user/pass"
@@ -62,7 +62,7 @@ curl --anyauth -u "user:pass" "https://httpbin.org/digest-auth/qop/user/passwd"
 ## ✅ 시나리오 2: HTTPS + mTLS 인증 (클라이언트 인증서 기반 인증 방식)
 
 ### 🔍 개요
-- 일부 카메라에서는 클라이언트의 신원을 인증서 기반으로 검증 (Mutual TLS)
+- 일부 장비에서는 클라이언트의 신원을 인증서 기반으로 검증 (Mutual TLS)
 - TLS 핸드셰이크 과정에서 클라이언트 인증서를 요구함
 - 인증서 없으면 TLS 연결 자체가 실패함
 
@@ -76,21 +76,21 @@ curl --anyauth -u "user:pass" "https://httpbin.org/digest-auth/qop/user/passwd"
 
 ### 🛠 C++ 코드 예시
 ```cpp
-void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
+void CurlClient::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
 {
     // 서버 인증서 검증
-    curl_easy_setopt(curl, CURLOPT_CAINFO, "C:\certs\ca.pem");
+    curl_easy_setopt(curl, CURLOPT_CAINFO, "C:\\path\\to\\certs\ca.pem");
 
     // 클라이언트 인증서 및 개인키 설정
-    curl_easy_setopt(curl, CURLOPT_SSLCERT, "C:\certs\client.crt");
-    curl_easy_setopt(curl, CURLOPT_SSLKEY, "C:\certs\client.key");
+    curl_easy_setopt(curl, CURLOPT_SSLCERT, "C:\\path\\to\\certs\client.crt");
+    curl_easy_setopt(curl, CURLOPT_SSLKEY, "C:\\path\\to\\certs\client.key");
     // 필요 시 개인키 비밀번호 설정
     // curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "password");
 
     // HTTP 인증
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANYSAFE);
     char userpwd[URL_MAX_LEN] = { 0, };
-    sprintf_s(userpwd, "%s:%s", m_strID.c_str(), m_strOldPW.c_str());
+    sprintf_s(userpwd, "%s:%s", m_userId.c_str(), m_password.c_str());
     curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd);
 
     curl_easy_setopt(curl, CURLOPT_HEADER, 0);
@@ -103,10 +103,10 @@ void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, 
 ### 🧪 CMD 테스트 명령어
 ```bash
 # 클라이언트 인증서, 개인 키, CA 포함
-curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "admin:password" "https://<카메라_IP>/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "<user>:<password>" "https://<device-host>/<api-path>"
 
 # PFX 파일 사용 시
-curl --cacert ca.pem --cert-type P12 --cert client.pfx --pass "your_pfx_password" --anyauth -u "admin:password" "https://<카메라_IP>/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --cacert ca.pem --cert-type P12 --cert client.pfx --pass "<pfx-password>" --anyauth -u "<user>:<password>" "https://<device-host>/<api-path>"
 ```
 
 ---
@@ -151,11 +151,11 @@ A. 가능합니다. libcurl의 `CURLOPT_SSLCERT_BLOB`, `CURLOPT_SSLKEY_BLOB`을 
 
 #### C++ 코드 예시
 ```cpp
-void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
+void CurlClient::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
 {
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANYSAFE);
     char userpwd[URL_MAX_LEN] = { 0, };
-    sprintf_s(userpwd, "%s:%s", m_strID.c_str(), m_strOldPW.c_str());
+    sprintf_s(userpwd, "%s:%s", m_userId.c_str(), m_password.c_str());
     curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd);
     curl_easy_setopt(curl, CURLOPT_HEADER, 0);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
@@ -164,7 +164,7 @@ void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, 
 
 #### CMD 테스트 예시
 ```bash
-curl --anyauth -u "admin:your_password" "https://<카메라_IP>/..."
+curl --anyauth -u "<user>:<password>" "https://<device-host>/..."
 curl --anyauth -u "user:pass" "https://httpbin.org/basic-auth/user/pass"
 ```
 
@@ -174,23 +174,23 @@ curl --anyauth -u "user:pass" "https://httpbin.org/basic-auth/user/pass"
 
 #### C++ 코드 예시
 ```cpp
-void CSamsungCamCurlMgr::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
+void CurlClient::MakeCurlHeader(curl_slist ** header_list, CURL * curl, int nProtocol)
 {
-    curl_easy_setopt(curl, CURLOPT_CAINFO, "C:\certs\ca.pem");
-    curl_easy_setopt(curl, CURLOPT_SSLCERT, "C:\certs\client.crt");
-    curl_easy_setopt(curl, CURLOPT_SSLKEY, "C:\certs\client.key");
+    curl_easy_setopt(curl, CURLOPT_CAINFO, "C:\\path\\to\\certs\ca.pem");
+    curl_easy_setopt(curl, CURLOPT_SSLCERT, "C:\\path\\to\\certs\client.crt");
+    curl_easy_setopt(curl, CURLOPT_SSLKEY, "C:\\path\\to\\certs\client.key");
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANYSAFE);
     char userpwd[URL_MAX_LEN] = { 0, };
-    sprintf_s(userpwd, "%s:%s", m_strID.c_str(), m_strOldPW.c_str());
+    sprintf_s(userpwd, "%s:%s", m_userId.c_str(), m_password.c_str());
     curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd);
 }
 ```
 
 #### CMD 테스트 예시
 ```bash
-curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "admin:your_password" "https://<카메라_IP>/..."
+curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "<user>:<password>" "https://<device-host>/..."
 
-curl --cacert C:\certs\ca.pem --cert C:\certs\client.crt --key C:\certs\client.key --anyauth -u "admin:SF6!DKEur" "https://10.10.240.71/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view"
+curl --cacert C:\\path\\to\\certs\ca.pem --cert C:\\path\\to\\certs\client.crt --key C:\\path\\to\\certs\client.key --anyauth -u "<user>:<password>" "https://<device-host>/<api-path>"
 ```
 
 ---
@@ -222,8 +222,8 @@ curl --cacert C:\certs\ca.pem --cert C:\certs\client.crt --key C:\certs\client.k
 
 | 위치 | 설명 |
 |------|------|
-| 카메라 웹 UI | `인증서 관리` 메뉴에서 다운로드 |
-| VMS 시스템 | SSM, WAVE 같은 관리 시스템의 설정 메뉴 |
+| 장비 웹 UI | `인증서 관리` 메뉴에서 다운로드 |
+| 장비 관리 시스템 | 장비 관리 시스템의 설정 메뉴 |
 | SI 업체/기술 지원 | 시스템 구축/설치 담당자 또는 제조사 문의 |
 
 ---
@@ -232,12 +232,12 @@ curl --cacert C:\certs\ca.pem --cert C:\certs\client.crt --key C:\certs\client.k
 
 ### PEM 형식
 ```bash
-curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "admin:password" "https://<카메라_IP>/..."
+curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "<user>:<password>" "https://<device-host>/..."
 ```
 
 ### PFX 형식
 ```bash
-curl --cacert ca.pem --cert-type P12 --cert client.pfx --pass "pfx_password" --anyauth -u "admin:password" "https://<카메라_IP>/..."
+curl --cacert ca.pem --cert-type P12 --cert client.pfx --pass "<pfx-password>" --anyauth -u "<user>:<password>" "https://<device-host>/..."
 ```
 
 ---
@@ -260,7 +260,7 @@ curl --cacert ca.pem --cert-type P12 --cert client.pfx --pass "pfx_password" --a
 
 #### curl 예시
 ```bash
-curl --cert client.crt --key client.key -k --anyauth -u "admin:SF6!DKEur" "https://10.10.240.71/..."
+curl --cert client.crt --key client.key -k --anyauth -u "<user>:<password>" "https://<device-host>/..."
 ```
 
 > 📌 `-k` 옵션은 "서버 인증서의 유효성 검사를 건너뛰겠다"는 의미입니다. 즉, 중간자 공격(MITM)에 취약합니다.
@@ -281,7 +281,7 @@ curl --cert client.crt --key client.key -k --anyauth -u "admin:SF6!DKEur" "https
 
 #### curl 예시
 ```bash
-curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "admin:SF6!DKEur" "https://10.10.240.71/..."
+curl --cacert ca.pem --cert client.crt --key client.key --anyauth -u "<user>:<password>" "https://<device-host>/..."
 ```
 
 ---

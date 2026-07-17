@@ -1,16 +1,14 @@
 ---
-title: "[Note] curl api test "
+title: "[Note] curl로 HTTPS API 인증 흐름을 점검한 기록"
 date: 2025-06-20 10:00:00 +0900
-categories: [error]
+categories: [note]
 tags: [curl, api, 인증, digest, basic]
 layout: single
 ---
 
-# 🔐 curl 인증 방식(Basic vs Digest) 및 사용 방법 정리
+# curl로 HTTPS API 인증 흐름을 점검한 기록
 
-이 문서는 curl을 사용하여 인증이 필요한 장치(API 서버 등)에 요청할 때,  
-**Basic 인증과 Digest 인증의 차이점**과  
-**실제 명령어 사용법**, **디버깅 방법** 등을 정리한 실전 가이드입니다.
+curl을 사용해 인증이 필요한 HTTPS API를 점검하면서, Basic 인증과 Digest 인증의 차이, 실제 명령어, 디버깅 방법을 정리했다.
 
 ---
 
@@ -40,13 +38,13 @@ curl -v -k "https://[서버주소]/api"
 #### [1] Digest 인증을 사용하는 경우
 ```http
 HTTP/1.1 401 Unauthorized
-WWW-Authenticate: Digest realm="Camera", nonce="abc123", qop="auth"
+WWW-Authenticate: Digest realm="Device", nonce="abc123", qop="auth"
 ```
 
 #### [2] Basic 인증을 사용하는 경우
 ```http
 HTTP/1.1 401 Unauthorized
-WWW-Authenticate: Basic realm="Camera"
+WWW-Authenticate: Basic realm="Device"
 ```
 
 ---
@@ -82,7 +80,7 @@ curl -v -u "<user>:<password>" -k "https://..."
 | 🔑 비밀번호에 특수문자 포함 여부 | `!`, `^`, `&` 등은 cmd에서 오동작 가능 → `"비밀번호"`로 감싸기 |
 | 🧷 잘못된 인증 방식 사용 | Digest인데 Basic 쓰거나, 반대로 사용한 경우 |
 | 🔁 서버 응답 로그 확인 | `curl -v`로 `WWW-Authenticate:` 헤더 분석 |
-| 📶 비밀번호 또는 ID 오타 | 붙여넣기 대신 직접 타이핑 시도 |
+| 📶 인증 정보 오타 | 붙여넣기 대신 직접 타이핑 시도 |
 | 💻 명령어 실행 환경 | CMD에서 특수문자 문제 시 PowerShell로 시도 |
 
 ---
@@ -97,10 +95,10 @@ curl -v -u "<user>:<password>" -k "https://..."
 
 ## 📁 기타: 인증서 관련 질문에 대한 답변 요약
 
-### 🔸 사설 인증서를 다른 장비에 복사하면?
-- 단순히 `.crt` 또는 `.pem`만 복사해도 **다른 장치의 내부 정보는 알 수 없음**
-- 다만, 개인키까지 함께 복사하면 **장치 가장 가능성** 존재
-- 일반적으로는 **장치의 인증 정보, 설정, 비밀번호 등은 포함되어 있지 않음**
+### 🔸 인증서 파일을 다른 대상에 복사하면?
+- 단순히 `.crt` 또는 `.pem`만 복사해도 **다른 대상의 내부 정보는 알 수 없음**
+- 다만, 개인키까지 함께 복사하면 **클라이언트 가장 가능성** 존재
+- 일반적으로는 **대상 시스템의 인증 정보, 설정, 비밀번호 등은 포함되어 있지 않음**
 
 ---
 

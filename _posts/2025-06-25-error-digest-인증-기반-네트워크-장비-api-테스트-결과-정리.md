@@ -19,12 +19,12 @@ layout: single
 
 | 번호 | 명령어 설명 | 명령어 | 목적/특이사항 | 응답 요약 |
 |------|-------------|--------|---------------|------------|
-| 1 | 기존 Digest API 호출 (정상 문법) | `curl --digest -u <user>:<password> -k "https://...deviceinfo&action=view"` | Digest 인증으로 장치 정보 조회 | ❌ `(94) 인증 함수 오류` |
-| 2 | Digest API로 비밀번호 변경 시도 (오타 있음) | `curl -digest -u <user>:<password> -k "https://...<change-param>=<new-value>..."` | `-digest` → ❌ 잘못된 옵션 | ❌ `(94) 인증 함수 오류` |
-| 3 | 인증서 검증 실패 테스트 | `curl -u <user>:<password> "https://..."` | `-k` 미사용 → TLS 인증 실패 유도 | ❌ `(60) SEC_E_UNTRUSTED_ROOT` |
-| 4 | 인증 누락 상태에서 호출 | `curl -u <user>:<password> -k "https://.../<api-path>"` | Digest 없이 Basic 인증 시도 | ❌ `401 Unauthorized` |
-| 5 | Digest 인증 + 인증서 검증 실패 | `curl --digest -u <user>:<password> "https://..."` | `-k` 빠짐 → TLS 오류 발생 | ❌ `(60) SEC_E_UNTRUSTED_ROOT` |
-| 6 | 비밀번호 변경 (Digest 없음) | `curl -u <user>:<password> -k "https://...<change-param>=<new-value>..."` | Digest 없이 호출 → 인증 실패 | ❌ `401 Unauthorized` |
+| 1 | 기존 Digest API 호출 (정상 문법) | `curl --digest -u "<user>:<password>" -k "https://...deviceinfo&action=view"` | Digest 인증으로 장치 정보 조회 | ❌ `(94) 인증 함수 오류` |
+| 2 | Digest API로 비밀번호 변경 시도 (오타 있음) | `curl -digest -u "<user>:<password>" -k "https://...<change-param>=<new-value>..."` | `-digest` → ❌ 잘못된 옵션 | ❌ `(94) 인증 함수 오류` |
+| 3 | 인증서 검증 실패 테스트 | `curl -u "<user>:<password>" "https://..."` | `-k` 미사용 → TLS 인증 실패 유도 | ❌ `(60) SEC_E_UNTRUSTED_ROOT` |
+| 4 | 인증 누락 상태에서 호출 | `curl -u "<user>:<password>" -k "https://.../<api-path>"` | Digest 없이 Basic 인증 시도 | ❌ `401 Unauthorized` |
+| 5 | Digest 인증 + 인증서 검증 실패 | `curl --digest -u "<user>:<password>" "https://..."` | `-k` 빠짐 → TLS 오류 발생 | ❌ `(60) SEC_E_UNTRUSTED_ROOT` |
+| 6 | 비밀번호 변경 (Digest 없음) | `curl -u "<user>:<password>" -k "https://...<change-param>=<new-value>..."` | Digest 없이 호출 → 인증 실패 | ❌ `401 Unauthorized` |
 | 8 | 인증 없이 호출 | `curl "https://..."` | 인증 없이 호출 | ❌ `(60) 인증서 검증 실패` |
 | 9 | ID/PW에 쌍따옴표 사용 | `curl --digest -u "<user>:<password>" -k "https://..."` | 특수문자 대응 목적 | ❌ `(94) 인증 함수 오류` |
 | 10 | Digest + -k 옵션으로 재시도 | `curl --digest -u "<user>:<password>" -k "https://..."` | 인증 정보, 인증서 무시 모두 포함 | ❌ `(94) SEC_E_QOP_NOT_SUPPORTED` |

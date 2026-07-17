@@ -1,12 +1,12 @@
 ---
-title: "[Note] curl + OpenSSL 직접 빌드 기록 (Digest 인증용)"
+title: "[Note] Digest 인증 테스트를 위해 curl과 OpenSSL을 직접 빌드한 기록"
 date: 2025-06-25 20:00:00 +0900
 categories: [note]
 layout: single
 ---
 
 
-# 📘 개인 빌드 기록: Windows + Visual Studio 2017에서 libcurl.dll + OpenSSL 빌드 (Digest 인증용)
+# Digest 인증 테스트를 위해 curl과 OpenSSL을 직접 빌드한 기록
 
 ## 🧩 목적
 
@@ -20,7 +20,8 @@ layout: single
 ## 📁 디렉터리 구조 및 역할
 
 ```plaintext
-D:\Workspace\project(code)├── openssl\              # OpenSSL 소스 코드
+D:\work\deps\
+├── openssl\              # OpenSSL 소스 코드
 ├── openssl-build\        # OpenSSL 빌드 출력 (DLL, LIB, 헤더 등 포함)
 ├── curl\                 # curl 소스 코드
 ├── curl-build\           # CMake 빌드 대상 폴더
@@ -46,7 +47,7 @@ git checkout openssl-3.2.1
 
 perl Configure VC-WIN64A no-shared no-tests
 nmake
-nmake install DESTDIR="D:\Workspace\project(code)\openssl-build"
+nmake install DESTDIR="D:\work\deps\openssl-build"
 ```
 
 설치 결과:
@@ -76,9 +77,9 @@ git checkout curl-8_6_0
 cmake ..\curl ^
  -DCMAKE_BUILD_TYPE=Release ^
  -DCURL_USE_OPENSSL=ON ^
- -DOPENSSL_ROOT_DIR="D:/Workspace/project(code)/openssl-build/Program Files/OpenSSL" ^
- -DOPENSSL_INCLUDE_DIR="D:/Workspace/project(code)/openssl-build/Program Files/OpenSSL/include" ^
- -DCMAKE_INSTALL_PREFIX="D:/Workspace/project(code)/curl-install" ^
+ -DOPENSSL_ROOT_DIR="D:/work/deps/openssl-build/Program Files/OpenSSL" ^
+ -DOPENSSL_INCLUDE_DIR="D:/work/deps/openssl-build/Program Files/OpenSSL/include" ^
+ -DCMAKE_INSTALL_PREFIX="D:/work/deps/curl-install" ^
  -DENABLE_SSPI=OFF ^
  -DCURL_USE_SCHANNEL=OFF ^
  -DCURL_DISABLE_LIBPSL=ON ^
@@ -115,7 +116,7 @@ include_directories("${CMAKE_SOURCE_DIR}/lib")
 ## 4️⃣ 빌드 확인
 
 ```bash
-cd D:\Workspace\project(code)\curl-install\bin
+cd D:\work\deps\curl-install\bin
 curl.exe --version
 ```
 
@@ -132,7 +133,7 @@ Features: SSL OpenSSL ...
 ## 5️⃣ Digest 인증 테스트
 
 ```bash
-curl --digest -u <user>:<password> -k "https://<device-host>:443/<api-path>"
+curl --digest -u "<user>:<password>" -k "https://<device-host>:443/<api-path>"
 ```
 
 - SSPI 비활성화 → Windows 인증 비의존

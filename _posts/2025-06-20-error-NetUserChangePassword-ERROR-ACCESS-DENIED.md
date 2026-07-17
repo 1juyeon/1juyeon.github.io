@@ -1,12 +1,12 @@
 ---
-title: "[Error] NetUserChangePassword ERROR ACCESS DENIED"
+title: "[Error] Windows 계정 변경 API에서 접근 거부가 날 때"
 date: 2025-06-20 10:00:00 +0900
 categories: [error]
 tags: [windows, NetUserChangePassword, api, "24H2", windows server, "21H2", NetUserSetInfo]
 layout: single
 ---
 
-# Windows 11 비밀번호 변경 (`NetUserChangePassword`) 관련 권한 및 정책 정리
+# Windows 계정 변경 API에서 접근 거부가 날 때
 
 ## 📌 1. 개요
 
@@ -57,14 +57,14 @@ net localgroup administrators
 ```cpp
 NETRESOURCE nr = {0};
 nr.dwType = RESOURCETYPE_ANY;
-nr.lpRemoteName = L"\\<server-host>\IPC$";
-WNetAddConnection2(&nr, L"관리자비밀번호", L"관리자계정", 0);
+nr.lpRemoteName = L"\\\\<server-host>\\IPC$";
+WNetAddConnection2(&nr, L"<admin-password>", L"<admin-user>", 0);
 ```
 
 **CMD에서도 직접 확인 가능:**
 
 ```cmd
-net use \<server-host>\ipc$ /user:관리자계정 관리자비밀번호
+net use \\<server-host>\ipc$ /user:<admin-user> <admin-password>
 ```
 
 **성공 시:** `명령을 잘 실행했습니다.`  
@@ -170,12 +170,12 @@ Windows 로그 > 보안
   ``` 
 - 계정 확인을 위한 명령어들
    ```cmd
-  net user 계정이름 패스워드 ---> 패스워드변경
-  net user ----> pc 유저들
-  net user 계정이름 ---> 계정에 대한 정보들
-  net localgroup ----> 어떤 그룹들 있느지
-  net localgroup 특정 그룹 ---> 그룹에 누구 있는지
-  net user 계정이름 /active:yes 활성화 no 는 비활성환데 비활성화 잘 안 되는듯
+  net user <user> <new-password> ---> 비밀번호 변경
+  net user ----> PC 사용자 목록
+  net user <user> ---> 계정 상세 정보
+  net localgroup ----> 로컬 그룹 목록
+  net localgroup <group> ---> 그룹 구성원 확인
+  net user <user> /active:yes ---> 계정 활성화
   ```  
 ---
 

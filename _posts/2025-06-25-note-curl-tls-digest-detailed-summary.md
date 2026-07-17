@@ -113,7 +113,7 @@ SSPI(Security Support Provider Interface)는 Windows에서 제공하는 **통합
 
 ### 명령어
 ```bash
-curl --digest -u <user>:<password> -v https://your-server.com/protected
+curl --digest -u "<user>:<password>" -v https://your-server.com/protected
 ```
 
 ### 전제 조건

@@ -27,7 +27,7 @@ author_profile: true
 - [비밀번호 랜덤 생성이 재섞기 과정에서 무한 반복되던 문제]({% post_url 2024-07-17-error-password-generator-reshuffle-loop %})
 - [리눅스 서버 비밀번호 변경 기능을 붙이며 나눈 처리 기준]({% post_url 2025-11-11-note-linux-server-password-change %})
 - [비밀번호 보기/숨기기와 복사 버튼을 넣으며 신경 쓴 것]({% post_url 2025-11-14-note-password-visibility-copy-ui %})
-- [비밀번호 변경 일정 옵션이 다시 켜질 때 풀리는 문제]({% post_url 2025-11-17-error-schedule-option-reset %})
+- [스케줄 활성화 토글에서 옵션 상태가 초기화되던 문제]({% post_url 2025-11-17-error-schedule-option-reset %})
 - [DB 비밀번호 변경 화면을 만들며 같이 동기화한 것들]({% post_url 2026-06-16-note-db-password-change-consistency %})
 
 ## 외부 연동과 장비 자동화

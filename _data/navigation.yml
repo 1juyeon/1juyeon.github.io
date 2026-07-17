@@ -1,4 +1,6 @@
 main:
+  - title: "Work Log"
+    url: /work-log/
   - title: "Error"
     url: /error/
   - title: "Note"

@@ -19,6 +19,15 @@ author_profile: true
 - OpenSSL, Spring/Tomcat, DB 엔진처럼 기반 라이브러리와 실행 환경을 올리며 호환성 문제를 분리해서 확인했습니다.
 - 반복되는 연동 작업은 JSON 템플릿, CLI 자동화, 로컬 AI 세션 아카이브 같은 형태로 재사용 가능하게 정리했습니다.
 
+## 포트폴리오 사례형 글
+
+- [성공 로그 뒤에 숨어 있던 동기화 불일치 추적기]({% post_url 2024-09-12-error-reported-success-sync-drift %})
+- [테스트 장비 없이 TLS 라이브러리 업그레이드를 검증한 방법]({% post_url 2025-06-26-note-tls-upgrade-validation-without-device %})
+- [외부 SDK 초기화 실패를 원인 후보별로 쪼개 본 기록]({% post_url 2026-06-30-error-sdk-init-failure-checklist %})
+- [장비마다 다른 인증 방식 때문에 변경이 실패하던 문제]({% post_url 2025-07-01-error-auth-method-fallback %})
+- [세션 값을 복사했을 때 다른 계정으로 접근되던 문제]({% post_url 2024-05-22-error-session-cookie-copy-reuse %})
+- [Windows 계정 변경 API에서 접근 거부가 날 때]({% post_url 2025-06-20-error-NetUserChangePassword-ERROR-ACCESS-DENIED %})
+
 ## 보안과 인증 대응
 
 - [장기 미접속 계정 비활성화 정책을 다듬으며 확인한 것]({% post_url 2024-01-08-note-inactive-account-policy-admin-exception %})

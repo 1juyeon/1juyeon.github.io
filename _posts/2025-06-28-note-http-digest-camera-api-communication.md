@@ -180,6 +180,37 @@ Digest 인증에서 기억할 점은 다음이다.
 - 첫 번째 `401`은 실패가 아니라 인증 challenge일 수 있다.
 - 최종 성공 여부는 재요청 이후의 HTTP Status와 API 응답을 봐야 한다.
 
+## Digest에서 특히 헷갈리기 쉬운 값들
+
+Digest 인증은 단순히 아이디와 비밀번호만 맞으면 끝나는 방식이 아니다. 서버가 보낸 challenge 값과 클라이언트가 실제로 보낸 요청 정보가 같이 맞아야 한다.
+
+자주 봐야 하는 값은 다음이다.
+
+| 값 | 의미 | 확인 포인트 |
+| --- | --- | --- |
+| `realm` | 인증 영역 이름 | 클라이언트가 응답 해시를 만들 때 같은 값을 사용해야 함 |
+| `nonce` | 서버가 발급한 일회성 값 | 오래되었거나 재사용 정책에 걸리면 인증 실패 가능 |
+| `qop` | 보호 수준 | 보통 `auth`를 사용하며 클라이언트가 지원해야 함 |
+| `algorithm` | 해시 알고리즘 | `MD5`, `SHA-256` 등 클라이언트 호환성 확인 필요 |
+| `method` | HTTP 메서드 | `GET`, `POST`가 실제 요청과 달라지면 해시가 맞지 않음 |
+| `uri` | 요청 대상 경로 | 실제 요청 경로와 query string 포함 여부가 맞아야 함 |
+| `response` | 클라이언트가 계산한 해시 | 위 값 중 하나라도 달라지면 서버 계산값과 달라짐 |
+| `stale` | nonce 만료 여부 | `stale=true`면 새 nonce로 다시 요청해야 할 수 있음 |
+
+특히 실수하기 쉬운 부분은 `method`와 `uri`다.
+
+예를 들어 실제 요청은 `POST /onvif/device_service`인데, Digest 계산에 사용한 method가 `GET`으로 들어가면 비밀번호가 맞아도 인증은 실패할 수 있다. SUNAPI처럼 query string이 긴 API에서는 `uri`에 query string이 포함되는지, 클라이언트 라이브러리가 어떤 값을 넣는지도 같이 봐야 한다.
+
+따라서 Digest 인증 문제를 볼 때는 다음처럼 나눠서 확인하는 것이 좋다.
+
+```text
+1. ID/PW가 맞는가?
+2. 서버가 어떤 Digest 조건을 내려줬는가?
+3. 클라이언트가 같은 조건으로 Authorization 헤더를 만들었는가?
+4. 실제 method와 uri가 해시 계산에 들어간 값과 같은가?
+5. 사용하는 curl/라이브러리가 서버의 algorithm을 지원하는가?
+```
+
 ## Basic 인증과 Digest 인증 차이
 
 장비 API를 테스트할 때 Basic과 Digest를 헷갈릴 수 있다.
@@ -228,6 +259,33 @@ curl -v --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>"
 - 최종 응답이 `200 OK`인지
 - 최종 Body에 API 결과가 있는지
 
+이때 로그를 남길 때는 보안 정보를 그대로 저장하지 않는다.
+
+| 로그에 남길 것 | 마스킹할 것 |
+| --- | --- |
+| HTTP method | 실제 계정명 |
+| API 경로의 형태 | 비밀번호 |
+| HTTP status | `Authorization` 헤더 전체 |
+| `Content-Type` | Digest `response` 해시 |
+| `Content-Length` | 내부 IP, 장비명, 고객사명 |
+| Body 구조 요약 | 원본 인증 토큰 또는 세션 값 |
+| 재조회/재로그인 결과 | 운영 환경 식별 정보 |
+
+블로그나 문서에 남길 때는 원본 요청/응답 전체를 붙이기보다, 문제 판단에 필요한 구조만 남기는 것이 안전하다.
+
+예를 들면 다음 정도면 충분하다.
+
+```text
+POST /onvif/device_service
+HTTP 200 OK
+Content-Type: application/soap+xml
+Content-Length: 323
+SOAP Envelope 있음
+SOAP Body 비어 있음
+요청 대응 Response 태그 없음
+변경값 재확인 결과 적용됨
+```
+
 ## ONVIF는 SOAP XML을 HTTP Body에 담는다
 
 ONVIF 요청은 HTTP 위에서 SOAP XML을 주고받는다.
@@ -269,6 +327,30 @@ Content-Length: 180
 ```
 
 ONVIF에서는 HTTP Status뿐 아니라 SOAP Body 안의 응답 태그까지 봐야 한다.
+
+## ONVIF에서 SOAP 1.1과 SOAP 1.2도 같이 본다
+
+ONVIF 응답을 볼 때 `Content-Type`도 힌트가 된다.
+
+| 구분 | 흔한 Content-Type | 특징 |
+| --- | --- | --- |
+| SOAP 1.1 | `text/xml` | 별도의 `SOAPAction` 헤더를 쓰는 경우가 많음 |
+| SOAP 1.2 | `application/soap+xml` | action 정보가 Content-Type 파라미터로 들어갈 수 있음 |
+
+내가 본 응답은 `application/soap+xml`이었기 때문에 SOAP 1.2 형식으로 보는 것이 자연스러웠다.
+
+다만 장비마다 구현이 완전히 깔끔하지 않을 수 있다. 어떤 장비는 SOAP 버전, namespace, Content-Type을 엄격하게 맞추지 않거나, 요청은 처리했지만 응답 태그를 비워서 보내기도 한다.
+
+그래서 ONVIF 쪽 문제를 볼 때는 다음을 같이 확인한다.
+
+- 요청 URL이 ONVIF endpoint인지
+- 요청 SOAP Envelope의 namespace가 맞는지
+- `Content-Type`이 SOAP 1.1 또는 SOAP 1.2와 맞는지
+- 요청에 필요한 action 정보가 들어갔는지
+- 응답 SOAP Body 안에 요청에 대응되는 `Response` 태그가 있는지
+- 실패라면 `SOAP Fault`가 있는지
+
+이렇게 보면 “HTTP 요청은 성공했는데 gSOAP 파싱만 실패한 상황”과 “장비가 ONVIF 요청 자체를 이해하지 못한 상황”을 나누는 데 도움이 된다.
 
 ## HTTP Body와 SOAP Body는 다르다
 
@@ -427,6 +509,25 @@ SUNAPI에는 SOAP Body 계층이 없기 때문이다.
 | 클라이언트 구현 | gSOAP 같은 SOAP 클라이언트 | HTTP 클라이언트, curl 등 |
 
 ONVIF는 표준 SOAP 메시지를 해석해야 하고, SUNAPI는 HTTP 응답 Body 값을 직접 해석하는 쪽에 가깝다.
+
+## 응답 패턴별로 빠르게 해석하기
+
+실제 로그를 볼 때는 아래 표처럼 먼저 분류하면 좋다.
+
+| 응답 패턴 | 우선 해석 | 다음 확인 |
+| --- | --- | --- |
+| `401` + `WWW-Authenticate: Digest` | Digest challenge | 재요청에 `Authorization: Digest`가 붙는지 확인 |
+| `401` 반복 | 인증 실패 가능성 | ID/PW, realm, nonce, algorithm, method, uri 확인 |
+| `200` + ONVIF Response 태그 | ONVIF 응답 정상 | 실제 변경값이 필요한 경우 재조회 |
+| `200` + SOAP Fault | SOAP/API 레벨 실패 | Fault code, Fault reason 확인 |
+| `200` + 빈 SOAP Body | 응답 XML 구조 불완전 | 실제 적용 여부를 재조회/재로그인으로 확인 |
+| `200` + SUNAPI `OK` | SUNAPI 처리 성공 가능성 높음 | 설정 변경이면 view API로 재조회 |
+| `200` + `Content-Length: 0` | HTTP Body 없음 | API가 무응답 성공인지, 장비 구현 문제인지 재조회 |
+| timeout 또는 connection error | 연결/TLS/네트워크 문제 | IP, port, 방화벽, TLS 옵션 확인 |
+
+이 표에서 중요한 점은 `200`이 여러 의미를 가질 수 있다는 것이다.
+
+`200 + 정상 Body`라면 성공으로 볼 근거가 강하지만, `200 + 빈 SOAP Body`나 `200 + Content-Length: 0`은 실제 상태 확인을 붙여야 한다.
 
 ## 200 OK를 받았을 때 성공 여부를 판단하는 방법
 

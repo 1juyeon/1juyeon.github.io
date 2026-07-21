@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 스케줄 활성화 토글에서 옵션 상태가 초기화되던 문제
 
 ## 문제
 

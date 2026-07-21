@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 민감 설정 변경 이력 화면을 정리하며 결정한 것
 
 ## 이번에 한 작업
 

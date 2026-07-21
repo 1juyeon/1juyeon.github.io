@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 기존 암호문을 새 복호화 로직과 같이 살리며 배운 점
 
 ## 이번에 한 작업
 

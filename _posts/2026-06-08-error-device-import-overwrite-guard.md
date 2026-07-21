@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 외부 동기화에서 기존 값이 덮어써지는 문제
 
 ## 문제
 

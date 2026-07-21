@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 외부 데이터의 줄바꿈 때문에 목록 팝업이 깨지던 문제
 
 ## 문제
 

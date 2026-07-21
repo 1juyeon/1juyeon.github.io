@@ -5,6 +5,7 @@ categories: [note]
 tags: [compliance, dependency, eol, upgrade, java]
 layout: single
 review_required: true
+published: false
 ---
 
 # 보안 심사 대응용 의존성 업그레이드는 어디서부터 봐야 할까

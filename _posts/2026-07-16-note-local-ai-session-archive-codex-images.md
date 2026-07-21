@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 로컬 AI 세션 아카이버에 Codex 로그와 이미지 보존을 추가한 기록
 
 ## 이번에 한 작업
 

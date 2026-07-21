@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 랜덤 비밀번호 생성에 DRBG를 적용하며 확인한 것
 
 ## 이번에 한 작업
 

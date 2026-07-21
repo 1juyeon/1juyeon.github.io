@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 민감 값 보기/숨기기와 복사 버튼을 넣으며 신경 쓴 것
 
 ## 이번에 한 작업
 

@@ -1,90 +1,93 @@
 ---
-title: "[Note] 스케줄러가 겹쳐 실행되는지 확인하는 방법"
+title: "[Note] 1분 주기 스케줄이 겹쳐 실행되는지 코드로 확인한 기록"
 date: 2026-06-11 20:00:00 +0900
 categories: [note]
-tags: [spring, scheduler, concurrency, batch, locking]
+tags: [spring, scheduler, concurrency, batch]
 layout: single
-review_required: true
 ---
 
-# 스케줄러가 겹쳐 실행되는지 확인하는 방법
+1분마다 실행되는 비밀번호 변경 스케줄이 있었다. 한 스케줄의 장비 처리가 길어질 때 다른 스케줄이 동시에 시작할 수 있는지 확인해야 했다.
 
-## 궁금했던 점
+확인할 범위는 두 가지였다.
 
-1분마다 실행되는 스케줄러가 있고, 그 안에서 여러 작업을 처리한다면 이런 의문이 생긴다.
+```text
+같은 1분에 대상이 된 여러 스케줄이 병렬로 실행되는가?
+한 번의 실행이 1분을 넘으면 다음 tick과 겹치는가?
+```
 
-- 앞 작업이 끝나기 전에 다음 작업이 시작될까?
-- 이번 분의 실행이 길어지면 다음 분 실행과 겹칠까?
-- 여러 스케줄 항목이 같은 시각에 도래하면 병렬로 돌까?
+## 실제 코드에서 확인한 흐름
 
-이건 스케줄러 설정과 코드 구조를 같이 봐야 한다.
-
-## for 루프면 같은 tick 안에서는 순차 처리
-
-스케줄 메서드 안에서 작업 목록을 가져와 `for` 루프로 처리한다면, 같은 실행 안에서는 기본적으로 순차 처리된다.
+스케줄 메서드는 1분마다 실행되고, 실행 대상 목록을 `for` 루프로 처리했다.
 
 ```java
 @Scheduled(cron = "0 0/1 * * * *")
-public void runSchedules() {
-    List<Job> jobs = findRunnableJobs();
+public void checkRunTask() {
+    List<Schedule> schedules = findSchedulesToRun();
 
-    for (Job job : jobs) {
-        runOneJob(job);
+    for (Schedule schedule : schedules) {
+        runPasswordSchedule(schedule);
     }
 }
 ```
 
-이 구조에서는 A 작업이 끝나야 B 작업이 시작된다. 같은 시각에 여러 작업이 대상이 되더라도 동시에 실행되는 것이 아니라 뒤 작업이 지연된다.
+`runPasswordSchedule()`을 별도 executor에 넘기거나 `@Async`로 호출하는 코드도 없었다. 따라서 같은 tick에서 스케줄 A가 끝나야 스케줄 B가 시작한다.
 
-## 다음 tick과 겹치는지는 스레드풀 설정을 봐야 한다
+```text
+A 시작 → A 완료 → B 시작 → B 완료
+```
 
-Spring 스케줄러가 단일 스레드로 동작한다면, 이전 실행이 끝나기 전에는 다음 실행이 기다린다. 그래서 한 번에 하나만 돈다.
+## 다음 tick도 현재 구성에서는 겹치지 않았다
 
-하지만 아래 조건이 있으면 겹칠 수 있다.
+스케줄러 설정과 실행 thread를 확인했을 때 현재 배포 구조는 한 worker에서 실행됐다. 이전 실행이 끝나지 않으면 다음 1분 호출은 기다리므로 두 번의 `checkRunTask()`가 동시에 돌지 않았다.
 
-- 스케줄러 스레드풀이 2개 이상임
-- 메서드 내부에서 `@Async` 또는 별도 thread를 사용함
-- 작업별로 executor에 던지고 바로 반환함
-- 여러 서버 인스턴스가 같은 DB를 보고 스케줄을 실행함
+결론은 다음과 같았다.
 
-그래서 단순히 `@Scheduled`만 보고 판단하면 안 된다. 실행 스레드 수, 비동기 호출 여부, 배포 인스턴스 수를 같이 확인해야 한다.
+```text
+현재 단일 인스턴스/단일 worker 구성에서는 동시 실행되지 않는다.
+```
 
-## 확인 체크리스트
+## 동시 실행이 아니라 지연이 문제였다
 
-- `TaskScheduler` 또는 `ScheduledExecutorService` pool size가 몇 개인가
-- 스케줄 메서드에 `@Async`가 붙어 있는가
-- 내부에서 `CompletableFuture`, `ExecutorService`, `new Thread`를 쓰는가
-- 작업 시작 전에 DB 상태를 `RUNNING`으로 바꾸는가
-- 작업 종료 또는 예외 시 상태를 반드시 해제하는가
-- 같은 애플리케이션이 여러 대 떠 있는가
+예를 들어 A가 4분 걸리고 B가 같은 시각에 실행 대상이라면 B는 병렬로 시작하지 않는다. A가 끝난 뒤 시작하므로 예정 시각보다 늦어진다.
 
-여러 대가 떠 있다면 애플리케이션 메모리 lock만으로는 부족하다. DB row lock, unique constraint, distributed lock 같은 공유 lock이 필요하다.
+```text
+10:00 A 시작
+10:04 A 완료
+10:04 B 시작
+```
 
-## 지연과 중복은 다른 문제
+사용자는 B가 늦게 실행된 것을 보고 스케줄러가 누락됐다고 느낄 수 있다. 하지만 실제 원인은 중복 실행이 아니라 앞 작업의 처리 시간이다.
 
-순차 처리 구조에서는 동시 실행은 막히지만 지연은 생길 수 있다.
-
-예를 들어 1분마다 실행되는데 첫 번째 작업이 5분 걸리면, 그 뒤 작업은 계속 밀린다. 동시 실행은 아니지만 사용자는 "스케줄이 제시간에 안 돈다"고 느낄 수 있다.
-
-이 경우에는 병렬화보다 먼저 작업 단위를 줄이거나, 실행 시간을 기록해서 지연을 관찰할 수 있게 만드는 편이 좋다.
+그래서 시작 시각과 종료 시각, 대상 수, 경과 시간을 같이 남겨야 했다.
 
 ```java
-long started = System.currentTimeMillis();
+long startedAt = System.currentTimeMillis();
 try {
-    runOneJob(job);
+    runPasswordSchedule(schedule);
 } finally {
-    log.info("job finished. id={}, elapsedMs={}", job.id(), System.currentTimeMillis() - started);
+    log.info("schedule finished. id={}, elapsedMs={}",
+        schedule.getId(),
+        System.currentTimeMillis() - startedAt);
 }
 ```
 
-## 예방 설계
+## 결론이 바뀔 수 있는 조건
 
-스케줄 작업은 재실행과 중복 실행을 전제로 설계하는 것이 안전하다.
+이번 결론은 현재 코드와 배포 구성에 대한 것이다. 아래 변경이 생기면 다시 확인해야 한다.
 
-- 작업 시작 시 `RUNNING` 상태를 기록한다.
-- 이미 `RUNNING`이면 건너뛰거나 timeout 기준으로 복구한다.
-- 성공/실패와 관계없이 finally에서 상태를 정리한다.
-- 외부 장비나 API 호출은 idempotent하게 만든다.
-- 실행 이력을 남겨 지연과 실패를 구분한다.
+- scheduler pool size를 2 이상으로 늘림
+- 내부 작업에 `@Async`, `ExecutorService`, `CompletableFuture` 사용
+- 애플리케이션 인스턴스를 여러 대 실행
+- 별도 프로세스가 같은 스케줄 테이블을 처리
 
-정리하면, `for` 루프 자체는 순차 실행을 보장하지만 전체 시스템의 중복 실행까지 보장하지는 않는다. 스레드풀, 비동기 호출, 다중 인스턴스, DB 상태 전환까지 같이 확인해야 한다.
+특히 다중 인스턴스에서는 Java 메모리 lock만으로 중복 실행을 막을 수 없다. DB 상태 전이, row lock 또는 분산 lock이 필요하다.
+
+## 정리
+
+처음 확인하려던 것은 “다른 스케줄이 시작될 수 있는가”였고, 실제 코드 기준 결론은 **현재는 시작할 수 없다**였다.
+
+- 같은 tick의 대상은 `for` 루프로 순차 처리한다.
+- 현재 scheduler worker도 한 개라 다음 tick과 겹치지 않는다.
+- 대신 앞 작업이 길면 뒤 작업이 늦어진다.
+
+일반적인 가능성을 나열하는 것보다 실제 실행 경로, 비동기 호출, scheduler 설정, 배포 인스턴스 수를 확인한 뒤 결론을 내리는 것이 중요했다.

@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 운영 설정 변경을 DB와 백업까지 동기화한 기록
 
 ## 이번에 한 작업
 

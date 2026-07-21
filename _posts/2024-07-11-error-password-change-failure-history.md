@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 실패한 운영 작업도 감사 이력에 남기도록 고친 기록
 
 ## 문제
 

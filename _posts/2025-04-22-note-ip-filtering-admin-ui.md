@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# IP 접근 제어 설정 화면을 만들며 정리한 검증 흐름
 
 ## 이번에 한 작업
 

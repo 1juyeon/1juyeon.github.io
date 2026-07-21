@@ -4,6 +4,7 @@ date: 2025-06-20 10:00:00 +0900
 categories: [note]
 tags: [windows server, "21H2", "2022", 설치, Virual Machine, VM]
 layout: single
+published: false
 ---
 
 # Windows Server 2022 설치 가이드

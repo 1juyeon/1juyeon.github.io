@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 무결성 검증 기능과 이력 화면을 추가하며 나눈 역할
 
 ## 이번에 한 작업
 

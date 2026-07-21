@@ -124,40 +124,38 @@ Programmers 코딩 테스트 입문 문제 풀이입니다.
 #include <string.h>
 
 
-// 파라미터로 주어지는 문자열은 const로 주어집니다. 변경하려면 문자열을 복사해서 사용하세요.
 char* solution(const char* letter) {
- // return 값은 malloc 등 동적 할당을 사용해주세요. 할당 길이는 상황에 맞게 변경해주세요.
+    const char *morse[] = {
+        ".-","-...","-.-.","-..",".","..-.",
+        "--.","....","..",".---","-.-",".-..",
+        "--","-.","---",".--.","--.-",".-.",
+        "...","-","..-","...-",".--","-..-",
+        "-.--","--.."
+    };
 
-     char *morse[] = {
-     ".-","-...","-.-.","-..",".","..-.",
-     "--.","....","..",".---","-.-",".-..",
-     "--","-.","---",".--.","--.-",".-.",
-     "...","-","..-","...-",".--","-..-",
-     "-.--","--.."};
-    
-     int idx=0;
-     char* answer = (char*)malloc(1000);
-     char* cut_morse = strtok(letter, " "); //공백일때 문자열 자르기
-     memset(answer, 0, 1000);
+    size_t input_len = strlen(letter);
+    char* copy = (char*)malloc(input_len + 1);
+    char* answer = (char*)calloc(input_len + 1, 1);
+    int answer_index = 0;
 
-     while (cut_morse != NULL)
-     {
-         for (int i = 0; i < 26; i++)
-             {
-                 if (strcmp(cut_morse, morse[i])==0)
-                 {
-                 answer[idx++] = 97 + i;
-                 break;
-                 }
-         }
-     cut_morse = strtok(NULL, " ");
-     }
+    strcpy(copy, letter);
+    char* token = strtok(copy, " ");
 
-     return answer;
-} return h/5 + (h%5)/3 + ((h%5)%3);
+    while (token != NULL) {
+        for (int i = 0; i < 26; i++) {
+            if (strcmp(token, morse[i]) == 0) {
+                answer[answer_index++] = 'a' + i;
+                break;
+            }
+        }
+        token = strtok(NULL, " ");
+    }
+
+    free(copy);
+    return answer;
 }
 ```
 
 ## ✍️ 회고
 
-> 스스로 풀이하지 못해 다른 코드를 참고했다. strtok 라는 함수를 이용하는 방법과 포인터 배열을 선언해서 사용하는 방법에 대해 복습하면 좋을 것 같은 문제. 아스키코드의 대표적인 값들은 외우고 있어야 된다는걸 느꼈다.
+> 스스로 풀이하지 못해 다른 코드를 참고했다. `strtok`은 입력 문자열을 직접 수정하므로 `const char*`를 그대로 넘기면 안 되고, 수정 가능한 복사본을 만든 뒤 사용해야 한다는 점을 같이 확인했다.

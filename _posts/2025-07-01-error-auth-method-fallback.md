@@ -5,6 +5,7 @@ categories: [error]
 tags: [authentication, fallback, curl, onvif, device-integration]
 layout: single
 review_required: true
+published: false
 ---
 
 # 장비마다 다른 인증 방식 때문에 변경이 실패하던 문제

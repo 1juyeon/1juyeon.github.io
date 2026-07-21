@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 오래된 라이브러리 업그레이드를 단계별로 나눠 진행한 기록
 
 ## 이번에 한 작업
 

@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 배치 실행 로그에서 비밀번호가 찍히지 않게 하는 방법
 
 ## 상황
 

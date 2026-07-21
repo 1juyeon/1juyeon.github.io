@@ -5,6 +5,7 @@ categories: [error]
 tags: [debugging, sync, rollback, state-drift, native]
 layout: single
 review_required: true
+published: false
 ---
 
 # 성공 로그 뒤에 숨어 있던 동기화 불일치 추적기

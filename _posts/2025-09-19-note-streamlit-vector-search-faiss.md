@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# Streamlit AI 트러블슈팅 앱에서 벡터 검색 방식을 바꾼 기록
 
 ## 이번에 한 작업
 

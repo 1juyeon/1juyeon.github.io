@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 네이티브 연동에서 긴 문자열 뒤에 쓰레기값이 붙던 문제
 
 ## 문제
 

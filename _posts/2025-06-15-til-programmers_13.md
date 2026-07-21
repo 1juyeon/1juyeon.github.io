@@ -1,5 +1,5 @@
 ---
-title: "250615 Programmers 공 던지기기"
+title: "250615 Programmers 공 던지기"
 date: 2025-06-16 21:00:00 +0900
 categories: [til]
 tags: [Programmers, 코딩테스트, 입문, 코테]

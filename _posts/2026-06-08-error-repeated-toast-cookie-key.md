@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 완료 팝업이 계속 반복될 때 원인 분리하기
 
 ## 상황
 

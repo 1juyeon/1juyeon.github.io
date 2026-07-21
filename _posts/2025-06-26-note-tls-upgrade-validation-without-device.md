@@ -5,6 +5,7 @@ categories: [note]
 tags: [tls, openssl, curl, validation, packet-capture]
 layout: single
 review_required: true
+published: false
 ---
 
 # 실제 장비 테스트 전 TLS/libcurl 업그레이드 위험을 줄인 방법

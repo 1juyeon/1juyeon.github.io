@@ -4,6 +4,7 @@ date: 2025-06-20 10:00:00 +0900
 categories: [note]
 tags: [curl, api, 인증, digest, basic]
 layout: single
+published: false
 ---
 
 # curl로 HTTPS API 인증 방식을 먼저 확인한 기록

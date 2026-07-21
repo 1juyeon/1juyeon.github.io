@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 스케줄이 1분 일찍 실행되던 시간 정밀도 문제
 
 ## 문제
 

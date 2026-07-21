@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 네이티브 DRBG 초기화 오류를 thread-local로 정리한 기록
 
 ## 문제
 

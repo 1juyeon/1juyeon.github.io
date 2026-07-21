@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# SSH 기반 서버 계정 변경 기능을 붙이며 나눈 처리 기준
 
 ## 이번에 한 작업
 

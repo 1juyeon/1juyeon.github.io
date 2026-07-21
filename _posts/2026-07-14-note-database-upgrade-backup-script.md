@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# DB 엔진 업그레이드에서 백업 스크립트까지 같이 본 이유
 
 ## 이번에 한 작업
 

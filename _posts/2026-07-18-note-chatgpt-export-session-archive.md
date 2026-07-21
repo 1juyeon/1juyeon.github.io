@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# ChatGPT 데이터 내보내기를 세션 아카이브에 연결한 기록
 
 ## 이번에 한 작업
 

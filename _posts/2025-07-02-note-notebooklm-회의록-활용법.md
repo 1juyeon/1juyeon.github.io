@@ -5,7 +5,6 @@ categories: [note]
 layout: single
 ---
 
-# NotebookLM 기반 AI 회의록 활용 정리
 
 이 문서는 2025년 7월 2일 실습 미팅 내용을 바탕으로, Google의 **NotebookLM**을 활용하여 회의록을 보다 정확하고 효율적으로 작성하는 방법에 대해 정리한 개인 참고용 문서입니다.
 

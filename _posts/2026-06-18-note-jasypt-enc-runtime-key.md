@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 설정 암호화 알고리즘을 확인하고 복구 도구까지 맞춘 기록
 
 ## 이번에 한 작업
 

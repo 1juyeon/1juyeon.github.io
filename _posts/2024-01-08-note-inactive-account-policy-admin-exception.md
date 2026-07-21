@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 장기 미접속 계정 비활성화 정책을 다듬으며 확인한 것
 
 ## 이번에 한 작업
 

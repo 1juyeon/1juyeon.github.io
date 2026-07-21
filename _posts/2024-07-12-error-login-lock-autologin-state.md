@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 로그인 실패 잠금 계정이 자동 로그인에서 다른 상태로 바뀌던 문제
 
 ## 문제
 

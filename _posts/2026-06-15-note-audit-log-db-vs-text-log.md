@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 보안 요구사항 점검 중 로그의 의미를 다시 정리했다
 
 ## 이번에 한 작업
 

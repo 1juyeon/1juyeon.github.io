@@ -1,141 +1,142 @@
 ---
-title: "[Error] Windows curl에서 Digest 인증이 (94)로 실패한 문제"
+title: "[Error] 카메라 비밀번호 변경 API가 curl (94)로 실패한 문제"
 date: 2025-06-25 20:00:00 +0900
 categories: [error]
+tags: [curl, libcurl, digest, sspi, openssl, camera-api]
 layout: single
 ---
 
-# Windows curl에서 Digest 인증이 (94)로 실패한 문제
-
-## 상황
-
-HTTPS API에 Digest 인증으로 요청을 보내는 테스트를 하고 있었다.
-
-브라우저에서는 계정으로 접속이 됐고, API도 Digest 인증을 요구하고 있었다. 그래서 처음에는 아래처럼 curl 명령어만 맞추면 될 것이라고 생각했다.
-
-```bash
-curl -vk --digest -u "<user>:<password>" "https://<device-host>/<api-path>"
-```
-
-그런데 Windows 환경에서 아래와 비슷한 오류가 나왔다.
+카메라 비밀번호를 변경하고 새 비밀번호가 맞는지 확인하는 기능을 구현하던 중, Windows에서 두 API가 모두 아래 오류로 끝났다.
 
 ```text
-schannel: InitializeSecurityContext failed: SEC_E_QOP_NOT_SUPPORTED
 curl: (94) An authentication function returned an error
 ```
 
-처음에는 계정이 틀렸거나 URL이 틀린 줄 알았다. 그런데 확인할수록 단순 계정 문제가 아니라, Windows curl의 인증 처리 방식과 Digest 알고리즘 조합 문제에 가까웠다.
+처음에는 새 비밀번호의 특수문자나 변경 URL을 의심했다. 하지만 장비 정보 조회처럼 상태를 바꾸지 않는 API도 같은 오류가 났다. 이 비교로 문제 범위를 비밀번호 변경 로직이 아니라 두 요청이 공통으로 사용하는 HTTP Digest 인증과 Windows용 libcurl 쪽으로 좁혔다.
 
-## 먼저 확인한 것
+## 구현하고 있던 흐름
 
-바로 원인을 단정하지 않고, 실패 위치를 나눠서 봤다.
+네이티브 통신 모듈에서 요청 종류에 따라 URL을 만들고, 공통으로 Digest 인증을 설정하는 구조였다. 핵심만 줄이면 다음과 같다.
 
-| 확인한 것 | 이유 |
-| --- | --- |
-| URL과 포트가 맞는지 | 연결 자체가 되는지 먼저 확인 |
-| `-k` 옵션 유무 | 인증서 오류와 Digest 오류를 분리하기 위해 |
-| `--digest` 문법 | `-digest`처럼 잘못 쓰지 않았는지 확인 |
-| `WWW-Authenticate` 헤더 | 서버가 실제로 Digest를 요구하는지 확인 |
-| 계정 문자열 따옴표 | 특수문자가 셸에서 깨지는지 확인 |
-| `curl --version` | 어떤 TLS/인증 백엔드로 빌드된 curl인지 확인 |
+```cpp
+std::string credentials = userId + ":" + currentPassword;
 
-이 과정에서 `curl: (60)`은 인증서 검증 실패이고, `401 Unauthorized`는 Digest challenge일 수 있고, `(94)`는 인증 처리 함수 쪽 실패일 수 있다는 식으로 나눠서 보게 됐다.
-
-## Digest에서 401은 항상 실패가 아니다
-
-Digest 인증은 서버가 먼저 인증 조건을 알려주고, 클라이언트가 그 조건으로 해시를 계산해서 다시 요청하는 방식이다.
-
-흐름은 아래처럼 진행된다.
-
-```text
-1. 클라이언트가 요청
-2. 서버가 401 + WWW-Authenticate: Digest ... 응답
-3. 클라이언트가 nonce, realm, uri, method 등을 이용해 response 해시 계산
-4. Authorization: Digest ... 헤더를 붙여 재요청
-5. 서버가 계산값을 비교
+curl_easy_setopt(handle, CURLOPT_URL, requestUrl.c_str());
+curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+curl_easy_setopt(handle, CURLOPT_USERPWD, credentials.c_str());
+curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeCallback);
 ```
 
-그래서 아래 응답은 단순 실패가 아니라 정상적인 협상 시작일 수 있다.
+비밀번호 변경 요청은 새 비밀번호를 URL 인코딩해 전송했고, 확인 요청은 장비 정보 조회 API를 새 자격증명으로 다시 호출하는 방식이었다. 애플리케이션 코드에는 이미 `CURLAUTH_DIGEST`가 들어가 있었기 때문에 단순한 옵션 누락은 아니었다.
+
+## 먼저 401 응답을 다시 봤다
+
+인증 정보를 빼고 `curl -v -k`로 요청해 서버가 제시하는 인증 방식을 확인했다.
+
+```bash
+curl -v -k "https://<camera-host>/<api-path>"
+```
+
+응답에는 다음과 같은 challenge가 있었다.
 
 ```http
 HTTP/1.1 401 Unauthorized
-WWW-Authenticate: Digest realm="Device", algorithm=SHA-256, qop="auth", nonce="..."
+WWW-Authenticate: Digest realm="...", nonce="...", qop="auth"
 ```
 
-내가 실제로 봐야 했던 것은 401 자체가 아니라, curl이 이 challenge를 받은 뒤 다시 `Authorization: Digest ...` 헤더를 붙여 요청하는지였다.
+Digest 인증에서 첫 번째 `401`은 최종 실패가 아닐 수 있다. 서버가 `nonce`, `realm`, `qop` 같은 계산 조건을 알려주면 클라이언트가 `Authorization: Digest ...` 헤더를 만들어 재요청하는 것이 정상 흐름이다.
 
-## 문제가 된 조합
+따라서 확인해야 할 것은 `401` 자체가 아니라 다음 두 가지였다.
 
-핵심은 Windows에서 사용하는 curl 빌드 구성이었다.
+1. 서버가 Basic과 Digest 중 어떤 방식을 요구하는가
+2. challenge를 받은 curl이 Digest 헤더를 만들어 두 번째 요청을 보내는가
 
-`Schannel`은 Windows 기본 TLS 처리 기능이다. HTTPS 연결에서 인증서 검증이나 TLS handshake를 담당한다.
+## 오류를 계층별로 분리했다
 
-`SSPI`는 Windows 인증 처리 인터페이스다. curl이 SSPI를 사용하도록 빌드되어 있으면 Digest 인증 일부를 Windows 쪽에 맡길 수 있다.
+같은 HTTPS 요청이라도 실패 지점은 서로 다르다.
 
-문제는 서버가 Digest 인증에서 `SHA-256`, `qop="auth"` 같은 조건을 제시할 때, Windows curl 조합에서 이 처리가 기대대로 되지 않을 수 있다는 점이었다.
+| 관찰한 결과 | 판단한 지점 |
+| --- | --- |
+| 연결 자체가 안 됨 | IP, 포트, 방화벽 |
+| `curl: (60)` | 서버 인증서 검증 |
+| 첫 `401`과 Digest challenge | 정상적인 인증 협상 시작 가능 |
+| 인증 재요청 뒤 다시 `401` | 계정, 비밀번호, Digest 계산 확인 |
+| `curl: (94)` | 클라이언트 인증 함수 또는 빌드 구성 확인 |
+
+인증서 검증을 임시로 생략하는 `-k`는 Digest 문제를 해결하는 옵션이 아니다. TLS 인증서 오류와 HTTP 인증 오류를 분리해서 보기 위한 테스트 옵션일 뿐이다.
+
+## 비밀번호 문자열보다 libcurl 빌드가 의심스러웠던 이유
+
+처음에는 셸에서 특수문자가 잘못 해석되는지 확인하기 위해 자격증명을 따옴표로 감싸고, 같은 계정으로 여러 번 비교했다. 하지만 조회 API와 변경 API가 모두 같은 `(94)`로 실패했다.
+
+Windows용 curl은 빌드 구성에 따라 동작 경로가 달라진다.
+
+- `Schannel`: Windows의 TLS 처리 기능
+- `SSPI`: Windows의 인증 처리 인터페이스
+- `OpenSSL`: libcurl이 선택할 수 있는 별도의 TLS 백엔드
+
+문제가 난 빌드는 Digest 처리를 Windows SSPI 경로에 맡기고 있었다. challenge에 포함된 `qop`와 알고리즘 조합을 처리하는 과정에서 `SEC_E_QOP_NOT_SUPPORTED` 계열 오류가 나면서 curl 오류 94로 이어졌다.
+
+여기서 중요한 점은 TLS와 Digest를 섞어 생각하지 않는 것이다. OpenSSL과 Schannel은 HTTPS 연결을 담당하는 TLS 백엔드이고, Digest는 HTTP 인증이다. 이번 빌드의 핵심 변경은 **TLS 백엔드를 OpenSSL로 고정한 것과 함께, Digest 인증을 SSPI에 넘기지 않도록 비활성화한 것**이었다.
+
+## 직접 빌드한 libcurl로 기준을 고정했다
+
+설치된 curl을 계속 바꿔가며 비교하면 테스트 조건도 같이 바뀐다. 그래서 다음 조건으로 Windows용 curl과 libcurl을 직접 빌드했다.
 
 ```text
-서버: Digest + SHA-256 + qop=auth 제시
-Windows curl: SSPI/Schannel 조합으로 인증 처리 시도
-결과: SEC_E_QOP_NOT_SUPPORTED, curl (94)
+libcurl 8.6.0
+TLS backend: OpenSSL
+Schannel: OFF
+SSPI: OFF
+shared library: ON
 ```
 
-여기서 `qop`는 Quality of Protection의 줄임말이다. Digest 인증에서 어떤 보호 수준으로 계산할지 나타내는 값이다. 보통 API에서는 `auth`가 많이 보인다.
+빌드 후에는 먼저 실행 파일의 구성을 확인했다.
 
-## 내가 시도한 것
+```bash
+curl.exe --version
+```
 
-문제를 좁히기 위해 여러 방식으로 같은 요청을 다시 확인했다.
+출력에서 OpenSSL이 표시되고 Schannel/SSPI가 빠졌는지 확인한 뒤, 동일한 장비와 계정으로 다시 테스트했다. 명령행 테스트가 끝난 뒤에는 애플리케이션이 사용하는 `libcurl.dll`도 같은 빌드 결과로 교체했다.
 
-| 시도 | 확인한 내용 |
-| --- | --- |
-| 인증 없이 `curl -vk` | 서버가 Digest challenge를 주는지 확인 |
-| `-k` 없이 요청 | 인증서 오류와 인증 오류를 분리 |
-| `--digest` 붙여 요청 | Digest 인증 흐름 진입 여부 확인 |
-| 계정 문자열 따옴표 처리 | 특수문자 깨짐 가능성 제거 |
-| Postman 요청 | Windows SSPI 영향을 받지 않는 클라이언트와 비교 |
-| WSL/Linux curl 요청 | Windows Schannel/SSPI 조합을 벗어나서 비교 |
-| OpenSSL 기반 curl 확인 | `curl --version`에서 TLS 백엔드 확인 |
+## DLL만 바꾸고 끝내지 않은 이유
 
-이 과정에서 단순히 명령어 하나를 고치는 문제가 아니라, "어떤 curl이 인증을 처리하고 있는가"가 중요하다는 걸 알게 됐다.
-
-## 해결 방향
-
-최종적으로는 Windows 기본 curl에만 의존하지 않는 쪽으로 정리했다.
-
-가능한 대응은 아래였다.
-
-| 방법 | 의미 |
-| --- | --- |
-| Postman으로 비교 테스트 | 계정/API 문제가 아닌 클라이언트 구현 문제인지 확인 |
-| WSL 또는 Linux curl 사용 | Windows 인증 처리 경로를 배제 |
-| OpenSSL 기반 curl 사용 | Schannel/SSPI 영향을 줄이고 curl 내부 처리 기준으로 확인 |
-| 직접 빌드한 libcurl 사용 | 애플리케이션에 붙일 DLL까지 같은 기준으로 맞춤 |
-
-내가 선택한 방향은 OpenSSL 기반 curl/libcurl을 직접 빌드해서 테스트 기준을 고정하는 것이었다.
-
-## 이후 확인 기준
-
-이 문제 이후로 Digest 인증 오류를 볼 때는 아래 순서로 확인했다.
+비밀번호 변경 기능은 “HTTP 요청이 성공했다”만으로 완료되지 않는다. 실제 장비 상태까지 확인해야 한다.
 
 ```text
-1. curl -vk로 TLS 연결과 401 challenge 확인
-2. WWW-Authenticate의 Digest 조건 확인
-3. algorithm, qop, realm, nonce 값 확인
-4. curl --version으로 Schannel/SSPI/OpenSSL 여부 확인
-5. Postman 또는 WSL curl로 같은 요청 비교
-6. 필요하면 OpenSSL 기반 curl/libcurl로 테스트 환경 고정
+1. 기존 비밀번호로 조회 API 호출
+2. 비밀번호 변경 API 호출
+3. 새 비밀번호로 조회 API 재호출
+4. 새 비밀번호가 맞을 때만 내부 저장값 갱신
+5. 기존 비밀번호가 여전히 맞으면 변경 실패로 처리
+6. 둘 다 확인되지 않으면 상태 불명으로 남기고 재확인
 ```
 
-이 순서가 생기고 나서는 `(94)` 오류를 계정 오류로만 보지 않게 됐다.
+이 순서로 확인하면서 통신 라이브러리 교체가 조회 요청뿐 아니라 실제 변경과 사후 검증에도 같은 결과를 주는지 봤다.
 
-## 관련해서 이어진 글
+## 이후 보완
 
-- [curl로 HTTPS API 인증 방식을 먼저 확인한 기록]({% post_url 2025-06-20-note-curl-api-test %})
-- [Digest SHA-256 테스트를 위해 Windows용 curl/libcurl을 직접 빌드한 기록]({% post_url 2025-06-30-note-curl-openssl-직접-빌드-정리 %})
-- [HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기]({% post_url 2026-07-21-note-http-digest-camera-api-communication %})
+처음에는 SSPI를 비활성화한 libcurl 8.6.0 빌드로 교체했다. 이후 다른 장비가 Digest challenge에서 SHA-256 알고리즘을 제시하는 경우까지 대응하기 위해 SHA-256 지원을 확인한 DLL로 다시 갱신했다.
+
+즉 한 번의 curl 테스트로 끝난 작업이 아니라 다음 순서로 이어졌다.
+
+```text
+카메라 변경/조회 API의 curl (94) 확인
+→ Digest challenge 비교
+→ Windows SSPI 경로 문제 확인
+→ OpenSSL TLS + SSPI OFF libcurl 직접 빌드
+→ 애플리케이션 DLL 교체
+→ 새 비밀번호로 실제 상태 검증
+→ Digest SHA-256 장비까지 범위 확대
+```
 
 ## 정리
 
-이 오류는 단순히 "비밀번호가 틀렸다"로 볼 문제가 아니었다.
+이 문제의 핵심은 “장비 없이 TLS 업그레이드를 검증했다”가 아니다. 실제 카메라의 비밀번호 변경 API가 실패했고, 조회 요청과 변경 요청의 공통점을 비교해 Digest 인증 처리 경로를 찾은 것이 시작이었다.
 
-내가 한 일은 TLS 오류, 인증서 오류, Digest challenge, Windows curl 빌드 구성을 하나씩 분리해서 확인한 것이다. 혼자 테스트하면서 제일 힘들었던 부분은 실패 메시지가 전부 비슷하게 보인다는 점이었다. 그래서 각 오류가 어느 계층에서 난 것인지 나누는 기준을 만들었고, 그 결과 OpenSSL 기반 curl/libcurl을 직접 빌드하는 방향까지 이어졌다.
+내가 한 일은 API 응답을 Basic/Digest로 구분하고, 인증서 오류와 HTTP 인증 오류를 분리하고, Windows libcurl의 SSPI 의존을 끈 빌드를 만든 뒤 애플리케이션에 적용한 것이다. 마지막에는 새 비밀번호로 다시 접속해 장비 상태와 내부 저장 상태가 같이 맞는지까지 확인했다.
+
+관련 기록:
+
+- [SSPI를 끈 Windows용 libcurl을 직접 빌드한 기록]({% post_url 2025-06-30-note-curl-openssl-직접-빌드-정리 %})
+- [카메라 API 문제를 풀기 위해 정리한 HTTP Digest 인증 흐름]({% post_url 2026-07-21-note-http-digest-camera-api-communication %})

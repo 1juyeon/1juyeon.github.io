@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 운영 이력 데이터가 많아졌을 때 조회 성능을 정리한 기록
 
 ## 이번에 한 작업
 

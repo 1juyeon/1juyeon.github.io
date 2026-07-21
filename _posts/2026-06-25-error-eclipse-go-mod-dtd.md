@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# go.mod에 DTD 오류가 뜰 때
 
 ## 증상
 

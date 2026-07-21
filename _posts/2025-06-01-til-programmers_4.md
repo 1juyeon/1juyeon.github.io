@@ -25,10 +25,11 @@ Programmers 코딩 테스트 입문 문제 풀이입니다.
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 char* solution(int age) {
-    // return 값은 malloc 등 동적 할당을 사용해주세요. 할당 길이는 상황에 맞게 변경해주세요.
-    char* answer = (char*)malloc(sizeof(char)*4);
+    // age의 최댓값 1000(4자리)과 문자열 종료 문자를 포함한다.
+    char* answer = (char*)malloc(5);
 
     sprintf(answer, "%d" , age);
      

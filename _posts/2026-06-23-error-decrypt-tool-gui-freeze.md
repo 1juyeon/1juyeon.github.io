@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 암호화된 설정값 복구 도구를 Go 단일 exe로 만들며 겪은 GUI 멈춤
 
 ## 이번에 한 작업
 

@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 백업 경로 설정에서 불필요한 드라이브 의존성을 줄인 기록
 
 ## 이번에 한 작업
 

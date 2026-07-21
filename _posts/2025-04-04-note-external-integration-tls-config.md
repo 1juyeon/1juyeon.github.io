@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 외부 연동 TLS 전환에서 인터페이스와 설정을 같이 맞춘 기록
 
 ## 이번에 한 작업
 

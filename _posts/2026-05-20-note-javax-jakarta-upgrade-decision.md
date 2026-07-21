@@ -1,99 +1,87 @@
 ---
-title: "[Note] Spring과 Tomcat 업그레이드에서 javax와 jakarta를 먼저 봐야 하는 이유"
+title: "[Note] 오래된 Spring 웹 프로젝트를 Jakarta 기준으로 옮기며 확인한 범위"
 date: 2026-05-20 20:00:00 +0900
 categories: [note]
 tags: [spring, tomcat, jakarta, javax, migration]
 layout: single
-review_required: true
 ---
 
-# Spring과 Tomcat 업그레이드에서 javax와 jakarta를 먼저 봐야 하는 이유
+오래된 Java 웹 프로젝트의 JDK, Tomcat, Spring을 지원 중인 버전으로 올리는 작업을 시작했다. 처음에는 라이브러리 JAR을 교체하면 될 것 같았지만, 실제 변경은 Java import부터 XML 보안 설정, JSP 라이브러리, DB 연결 풀까지 이어졌다.
 
-## 핵심
+첫 마이그레이션 커밋만 100개가 넘는 파일에 영향을 줬다. 이 작업을 하며 버전 숫자보다 먼저 `javax.*`와 `jakarta.*` 기준선을 정해야 한다는 점을 확인했다.
 
-Java 웹 프로젝트에서 Spring과 Tomcat을 업그레이드할 때는 버전 숫자보다 먼저 `javax.*`와 `jakarta.*` 기준선을 봐야 한다.
+## 패키지명만 바꾸는 작업이 아니었다
 
-이 기준을 잘못 잡으면 "JDK는 올라갔는데 WAS와 Spring이 서로 맞지 않는" 조합이 된다.
-
-## 왜 문제가 되는가
-
-오래된 Java 웹 프로젝트는 보통 아래 패키지를 사용한다.
+Servlet API가 Jakarta로 옮겨가면서 다음 import를 전환했다.
 
 ```java
+// before
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.Filter;
+
+// after
+import jakarta.servlet.http.HttpServletRequest;
 ```
 
-하지만 Jakarta EE 기반으로 넘어가면 패키지가 바뀐다.
+컨트롤러뿐 아니라 필터, 세션 리스너, 요청 래퍼, 파일 다운로드의 `ServletOutputStream`, 리플렉션으로 조회하던 `ServletContext` 타입까지 찾아야 했다.
+
+`javax.servlet` 검색 결과만 일괄 치환하면 끝나는 것도 아니었다. 프로젝트에 직접 넣어둔 `servlet-api.jar`, JSP/JSTL, 메일·activation API처럼 Java EE 계열 의존성도 같은 기준으로 맞춰야 했다. WAS가 제공하는 API와 프로젝트 `lib`의 API가 섞이면 컴파일은 되더라도 런타임에 클래스 충돌이 날 수 있다.
+
+## Spring Security API도 같이 바뀌었다
+
+Spring Security 3.x에서 사용하던 클래스와 설정 일부는 새 버전에 없거나 생성 방식이 바뀌었다.
+
+비밀번호 인코더 import는 오래된 패키지에서 현재 패키지로 옮겼다.
 
 ```java
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.Filter;
+// before
+org.springframework.security.authentication.encoding.PasswordEncoder
+
+// after
+org.springframework.security.crypto.password.PasswordEncoder
 ```
 
-이건 단순 import 변경이 아니다. WAS, Spring, Spring Security, JSP, taglib, servlet-api, 테스트 코드까지 영향을 받는다.
+권한 객체도 제거된 구현 대신 `SimpleGrantedAuthority`로 바꿨다.
 
-## 조합을 고를 때 보는 기준
+```java
+authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+```
 
-업그레이드 후보를 볼 때는 다음 질문을 먼저 던진다.
+Remember-me 인증 제공자는 setter 주입이 더 이상 맞지 않아 생성자 인자로 키를 넘기도록 XML을 수정했다.
 
-- 현재 코드는 `javax.*` 기반인가?
-- 목표 Spring 버전은 Jakarta 기반인가?
-- 목표 Tomcat 버전은 어떤 Servlet 스펙을 지원하는가?
-- JSP와 taglib가 Jakarta 호환 버전인가?
-- 서드파티 라이브러리가 Jakarta 네임스페이스를 지원하는가?
+```xml
+<bean class="org.springframework.security.authentication.RememberMeAuthenticationProvider">
+    <constructor-arg value="example-key" />
+</bean>
+```
 
-이 질문에 답하지 않고 "JDK 21이면 되겠지", "Tomcat 최신이면 되겠지"라고 고르면 중간에 막힌다.
+보안 URL 규칙도 새 버전에서 명시적으로 평가되도록 로그인 경로와 나머지 인증 경로를 순서대로 선언했다. 이런 설정은 애플리케이션이 뜨는지만 봐서는 알기 어렵고 로그인, 자동 로그인, 권한별 접근을 실제로 확인해야 한다.
 
-## 최소 변경 경로와 전면 마이그레이션 경로
+## 의존성을 묶음으로 봤다
 
-보통 선택지는 두 가지다.
-
-| 경로 | 특징 |
-| --- | --- |
-| `javax.*` 유지 경로 | 코드 변경이 적고 회귀 위험이 낮다. 단, 지원 기간을 반드시 확인해야 한다. |
-| `jakarta.*` 전환 경로 | 장기 유지보수에는 유리하지만 전면 마이그레이션이 필요하다. |
-
-보안 심사 대응처럼 일정이 정해진 작업에서는 "지원 중인 버전"과 "마이그레이션 리스크"를 같이 봐야 한다. 지원 종료된 버전을 피하려다 전면 마이그레이션을 무리하게 넣으면 일정 리스크가 더 커질 수 있다.
-
-## 실제로 확인할 파일들
-
-영향 범위를 빨리 보려면 아래부터 검색한다.
+한 라이브러리만 새 버전으로 바꾸면 연쇄적으로 필요한 JAR이 생겼다.
 
 ```text
-javax.servlet
-javax.annotation
-javax.validation
-javax.xml.bind
-javax.persistence
+JDK / 컴파일 레벨
+-> Tomcat / Servlet·JSP 스펙
+-> Spring Framework
+-> Spring Security
+-> MyBatis·DBCP·JDBC
+-> Jakarta Mail·Activation·JSTL
 ```
 
-웹 프로젝트라면 다음 파일도 같이 본다.
+예를 들어 Spring Framework가 요구하는 보조 라이브러리가 빠지면 기동 중 `ClassNotFoundException`이 발생했고, MyBatis-Spring은 Spring과 MyBatis 양쪽 버전에 맞는 조합을 골라야 했다. 그래서 필요한 JAR을 무작정 더하는 대신 기존 구버전 JAR을 제거했는지도 함께 확인했다.
 
-- `web.xml`
-- Spring context XML
-- Spring Security XML 또는 Java config
-- JSP taglib 선언
-- `lib/`에 직접 들어간 `servlet-api.jar`
-- Eclipse facet, classpath, build path 설정
+## 실제로 나눈 검증 단계
 
-특히 `servlet-api.jar`를 프로젝트 `lib/`에 직접 넣어둔 오래된 구조라면 WAS가 제공하는 API와 충돌할 수 있다.
+1. 현재 브랜치가 기존 환경에서 빌드되는 기준점을 남겼다.
+2. Servlet/Jakarta import와 웹 XML을 먼저 맞췄다.
+3. Spring과 Spring Security의 제거된 API를 컴파일 오류 단위로 수정했다.
+4. 애플리케이션 기동과 Spring context 생성 로그를 확인했다.
+5. 로그인, 로그아웃, 세션, 자동 로그인, 권한 차단을 별도 시나리오로 확인했다.
+6. DB 연결, 파일 다운로드, JSP 렌더링처럼 Servlet API를 직접 쓰는 경로를 확인했다.
 
-## 마이그레이션을 시작하기 전 체크
+## 처음 시도와 실제 적용을 구분했다
 
-전면 전환을 하기로 했다면 바로 import만 바꾸지 말고 먼저 빌드 기준선을 만든다.
+초기 마이그레이션은 영향 범위를 파악하고 빌드 오류를 줄이는 데 의미가 있었지만, 그 자체를 운영 적용 완료로 보지는 않았다. 이후 로깅, JDBC, OpenSSL 로더, DB, JDK·Tomcat·Spring 전환을 단계별 커밋으로 다시 나눴다.
 
-1. 현재 브랜치에서 전체 빌드가 되는지 확인한다.
-2. 테스트 가능한 핵심 시나리오를 정한다.
-3. JDK와 WAS를 먼저 고정한다.
-4. 프레임워크와 보안 라이브러리 버전을 맞춘다.
-5. `javax` 검색 결과를 모듈별로 나눈다.
-6. 한 번에 전체를 고치지 말고 웹 계층, 보안 계층, JSP 계층을 나눠서 본다.
-
-## 정리
-
-Spring/Tomcat 업그레이드는 "어느 버전이 더 최신인가"보다 "같은 Servlet/Jakarta 계열인가"가 먼저다.
-
-`javax.*`를 유지할지, `jakarta.*`로 전환할지를 먼저 결정하면 가능한 조합과 작업 범위가 훨씬 선명해진다.
+큰 버전 이동에서 한 번에 모든 JAR을 교체하면 어떤 변경이 회귀를 만들었는지 찾기 어렵다. `javax`에서 `jakarta`로 넘어가는 기준을 먼저 잡고, 보안·DB·웹 계층을 각각 검증 가능한 단계로 분리한 것이 실제 적용 과정에서 더 중요했다.

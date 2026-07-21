@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 비밀번호 랜덤 생성이 재섞기 과정에서 무한 반복되던 문제
 
 ## 문제
 

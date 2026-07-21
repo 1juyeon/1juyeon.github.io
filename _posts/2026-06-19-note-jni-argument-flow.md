@@ -1,91 +1,95 @@
 ---
-title: "[Note] JNI 함수 인자 누락처럼 보일 때 추적하는 방법"
+title: "[Error] JNI 인자 하나가 빠져 URL과 계정 값이 한 칸씩 밀린 문제"
 date: 2026-06-19 20:00:00 +0900
-categories: [note]
-tags: [jni, java, cpp, sdk, debugging]
+categories: [error]
+tags: [jni, java, cpp, native, debugging]
 layout: single
-review_required: true
 ---
 
-# JNI 함수 인자 누락처럼 보일 때 추적하는 방법
-
-## 상황
-
-Java에서 JNI 함수를 호출하는 코드를 보다가 "새 비밀번호가 네이티브 함수로 안 넘어가는 것 아닌가?"라는 의심이 생겼다.
-
-네이티브 함수의 파라미터 이름은 `pw`처럼 일반적인 이름이고, Java 쪽 변수명은 `newPw`라면 더 헷갈릴 수 있다.
-
-하지만 이름만 보고 판단하면 안 된다. 실제 호출 흐름을 끝까지 따라가야 한다.
-
-## 추적 순서
-
-먼저 Java 호출부를 본다.
-
-```java
-int result = NativeApi.changePassword(deviceId, userId, newPw);
-```
-
-다음으로 JNI 시그니처를 본다.
-
-```cpp
-JNIEXPORT jint JNICALL Java_package_NativeApi_changePassword(
-    JNIEnv* env,
-    jobject obj,
-    jstring deviceId,
-    jstring userId,
-    jstring pw
-) {
-    // ...
-}
-```
-
-여기서 `pw`라는 이름만 보면 현재 비밀번호처럼 보일 수 있다. 하지만 Java에서 세 번째 인자로 `newPw`를 넘겼다면, JNI의 `pw`는 새 비밀번호다.
-
-중간에 변환 변수가 있으면 더 명확히 표시해두는 것이 좋다.
-
-```cpp
-const char* newPasswordValue = env->GetStringUTFChars(pw, nullptr);
-```
-
-이렇게 바꾸면 나중에 읽는 사람이 "이 pw가 무엇인지" 다시 추적하지 않아도 된다.
-
-## 기존 비밀번호가 없는 구조도 있다
-
-비밀번호 변경 함수라고 해서 항상 old password와 new password가 모두 필요한 것은 아니다.
-
-이미 인증된 관리 세션을 통해 변경하는 구조라면 외부 API는 새 비밀번호만 받을 수 있다.
+네이티브 DLL의 일부 변경만 이전 버전에 옮긴 뒤, 카메라 API 호출이 `CURL_FAIL`로 끝났다. 처음에는 URL이나 인증 방식 문제로 보였지만 로그의 인자 값이 서로 다른 자리에 찍히고 있었다.
 
 ```text
-관리 세션 로그인
--> 대상 장비 선택
--> 새 비밀번호 전달
--> 관리 서버가 변경 수행
+URL이 있어야 할 자리 -> 장비 ID
+ID가 있어야 할 자리  -> 다른 문자열
+비밀번호 자리          -> 앞 인자의 값
 ```
 
-이 경우 old password는 함수 인자로 필요하지 않다. 인증은 이미 앞 단계의 세션이 담당한다.
+원인은 Java 선언과 C++ JNI 함수의 인자 개수가 달랐기 때문이다.
 
-## 진짜 위험한 부분은 버전 호환성
+## 부분 반영 과정에서 계약이 달라졌다
 
-JNI에서 더 조심해야 하는 것은 인자 이름보다 Java wrapper와 네이티브 DLL, 외부 SDK의 버전이 맞는지다.
+Java 쪽 선언은 로그 추적용 장비 코드를 첫 번째 인자로 받도록 변경되어 있었다.
 
-예를 들어 어느 시점부터 외부 SDK 함수가 `newId` 같은 인자를 추가로 받도록 바뀌었다면, wrapper와 DLL이 서로 다른 버전일 때 문제가 난다.
+```java
+native int checkPassword(
+    String deviceCode,
+    String url,
+    String userId,
+    String password
+);
+```
 
-확인할 것은 다음과 같다.
+그런데 이전 버전용 DLL을 만들면서 C++ 함수에서는 이 인자를 제외했다.
 
-- Java 선언부의 인자 개수
-- JNI 함수 시그니처
-- 네이티브 내부에서 호출하는 SDK 함수 시그니처
-- 배포된 DLL 버전
-- 런타임 로그에 찍히는 wrapper 또는 SDK 버전
+```cpp
+JNIEXPORT jint JNICALL Java_example_NativeApi_checkPassword(
+    JNIEnv* env,
+    jclass clazz,
+    jstring url,
+    jstring userId,
+    jstring password
+)
+```
 
-## 기록해두면 좋은 것
+호출부는 네 개의 문자열을 넘기는데 네이티브 함수는 세 개로 해석한다. 결과적으로 `deviceCode`가 `url` 변수에 들어가고, 뒤의 인자도 차례대로 밀렸다.
 
-JNI 코드는 Java와 C/C++ 사이에서 이름과 타입이 쉽게 어긋난다. 그래서 다음 정보를 코드 근처나 운영 문서에 남겨두면 도움이 된다.
+## 왜 로딩 단계에서 바로 실패하지 않았는가
 
-- Java 메서드 인자 순서
-- JNI 변환 후 변수명
-- 외부 SDK 함수 인자 순서
-- old password가 필요한 구조인지, 세션 인증으로 대체되는 구조인지
-- DLL 교체 시 같이 배포해야 하는 파일 목록
+JNI는 오버로드 여부와 생성된 이름 규칙에 따라 함수를 연결한다. 이번 함수는 이름으로 연결은 되었기 때문에 `UnsatisfiedLinkError`가 먼저 발생하지 않았다. 대신 C++이 잘못된 위치의 `jstring`을 정상 문자열처럼 변환했고, 실제 HTTP 요청 단계에서 잘못된 URL이 사용됐다.
 
-정리하면, JNI에서 인자가 빠진 것처럼 보일 때는 이름보다 호출 순서와 API 계약을 기준으로 확인해야 한다. 변수명이 애매하다면 코드를 바꾸는 것보다 먼저 흐름을 명확히 적어두는 것이 좋다.
+이 때문에 표면 증상은 JNI 오류가 아니라 curl 통신 실패였다.
+
+```text
+Java/C++ 시그니처 불일치
+-> C++ 인자 해석 위치가 한 칸씩 이동
+-> 잘못된 URL로 요청
+-> curl 통신 실패
+```
+
+## 확인한 방법
+
+함수 이름이나 변수명만 비교하지 않고 인자 계약을 세 층으로 나눠 확인했다.
+
+1. Java `native` 선언의 타입과 순서
+2. 생성된 JNI 헤더의 함수 시그니처
+3. C++ 구현의 타입과 순서
+
+그다음 각 인자를 변환한 직후의 로그를 마스킹된 형태로 비교했다.
+
+```cpp
+const char* deviceCodeValue = env->GetStringUTFChars(deviceCode, nullptr);
+const char* urlValue = env->GetStringUTFChars(url, nullptr);
+const char* userIdValue = env->GetStringUTFChars(userId, nullptr);
+```
+
+로그 값이 한 자리씩 이동한 형태였기 때문에 문자열 인코딩 문제보다 시그니처 불일치를 먼저 의심할 수 있었다.
+
+## 수정 범위를 두 함수로 제한했다
+
+Java 선언과 대조했을 때 장비 코드가 추가된 함수는 비밀번호 확인과 변경, 두 개뿐이었다. C++ 구현과 JNI 헤더에 첫 번째 인자를 다시 추가하고 내부 호출 순서를 맞췄다.
+
+나머지 JNI 함수에는 같은 인자를 일괄 추가하지 않았다. 실제 Java 선언에 없는 인자를 넣으면 반대 방향의 불일치를 새로 만들기 때문이다.
+
+## 부분 이식에서 배운 점
+
+네이티브 변경을 다른 브랜치에 옮길 때는 관련 없어 보이는 인자를 함부로 제거하면 안 된다. 장비 코드는 외부 SDK의 새 기능이 아니라 Java 웹 애플리케이션과 DLL 사이의 호출 계약이었다.
+
+확인 목록은 다음처럼 정리했다.
+
+- Java 선언과 C++ 구현의 인자 수가 같은가
+- `jstring`, `jint`, `jboolean` 순서가 같은가
+- 생성된 JNI 헤더를 최신 선언으로 다시 만들었는가
+- DLL만 교체한 경우 호출하는 Java 클래스도 같은 버전인가
+- 로그는 URL·계정·비밀번호를 노출하지 않고도 인자 위치를 구분할 수 있는가
+
+이번 오류는 curl에서 드러났지만 원인은 HTTP가 아니었다. JNI 경계를 넘는 값이 이상할 때는 가장 바깥의 실패 코드보다 Java와 C++이 공유하는 함수 계약부터 대조해야 한다.

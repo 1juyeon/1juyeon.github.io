@@ -72,7 +72,7 @@ published: false
 
 ## 📘 참고: Digest 인증 응답 예시 헤더
 ```http
-WWW-Authenticate: Digest realm="iPolis_...", charset="UTF-8", algorithm="SHA-256", qop="auth"
-WWW-Authenticate: Digest realm="iPolis_...", charset="UTF-8", algorithm="MD5", qop="auth"
+WWW-Authenticate: Digest realm="device-realm", charset="UTF-8", algorithm="SHA-256", qop="auth"
+WWW-Authenticate: Digest realm="device-realm", charset="UTF-8", algorithm="MD5", qop="auth"
 ```
 > 해당 장치는 SHA-256, MD5 두 알고리즘 모두 제공하고 있지만, Windows 기본 curl은 QOP 지원이 부족하여 실패함

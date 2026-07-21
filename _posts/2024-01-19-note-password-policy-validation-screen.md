@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 비밀번호 규칙 관리와 검증 전용 기능을 만들며 정리한 것
 
 ## 이번에 한 작업
 

@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 네트워크 진단이 ARP 캐시 때문에 실패처럼 보일 때
 
 ## 문제
 

@@ -7,7 +7,6 @@ layout: single
 review_required: true
 ---
 
-# 세션 값을 복사했을 때 다른 계정으로 접근되던 문제
 
 ## 문제
 

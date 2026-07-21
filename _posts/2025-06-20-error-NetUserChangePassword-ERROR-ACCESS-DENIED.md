@@ -189,7 +189,7 @@ Windows 로그 > 보안
 
 - 관련 참고 링크 및 마이크로소프트 문의 링크
   ##### * 24H2 오류 관련 사례
-  >  https://answers.microsoft.com/en-us/windows/forum/all/windows-11-version-24h2-update-issue-with/07366110-8ee9-422c-815a-f6909414900b?utm_source=chatgpt.com
+  >  https://answers.microsoft.com/en-us/windows/forum/all/windows-11-version-24h2-update-issue-with/07366110-8ee9-422c-815a-f6909414900b
 
     ##### * 마이크로소프트 직접 문의 
   >  https://answers.microsoft.com/en-us/windows/forum/windows_11-other_settings/netuserchangepassword-returns-erroraccessdenied-on/de3b0bf0-1855-486d-98d6-f954c8f677b6?messageId=b0770387-0256-4d25-ade4-de785803cfac

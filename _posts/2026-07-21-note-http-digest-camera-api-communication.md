@@ -1,6 +1,6 @@
 ---
 title: "[Note] HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기"
-date: 2025-06-28 20:00:00 +0900
+date: 2026-07-21 21:00:00 +0900
 categories: [note]
 tags: [http, digest, camera-api, onvif, sunapi, soap, troubleshooting]
 layout: single
@@ -605,7 +605,7 @@ gSOAP 오류는 HTTP 오류가 아니라 SOAP 파싱 오류일 수 있다.
 
 개념을 정리한 뒤, 실제로 `200 OK`인데 SOAP Body가 비어 있어서 gSOAP이 `SOAP_NO_TAG(6)`를 반환한 케이스는 아래 글에 따로 정리했다.
 
-- [200 OK인데 gSOAP SOAP_NO_TAG가 나는 이유]({% post_url 2025-06-27-error-onvif-empty-soap-body-sunapi-body-check %})
+- [200 OK인데 gSOAP SOAP_NO_TAG가 나는 이유]({% post_url 2026-07-21-error-onvif-empty-soap-body-sunapi-body-check %})
 
 ## 정리
 

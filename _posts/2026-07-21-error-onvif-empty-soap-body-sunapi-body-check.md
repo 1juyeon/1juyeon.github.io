@@ -1,6 +1,6 @@
 ---
 title: "[Error] 200 OK인데 gSOAP SOAP_NO_TAG가 나는 이유"
-date: 2025-06-27 20:00:00 +0900
+date: 2026-07-21 21:10:00 +0900
 categories: [error]
 tags: [onvif, soap, sunapi, gsoap, http, digest, troubleshooting]
 layout: single
@@ -26,7 +26,7 @@ review_required: true
 
 HTTP Digest, ONVIF, SUNAPI, HTTP Body와 SOAP Body 차이는 아래 개념 정리 글에 따로 묶었다.
 
-- [HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기]({% post_url 2025-06-28-note-http-digest-camera-api-communication %})
+- [HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기]({% post_url 2026-07-21-note-http-digest-camera-api-communication %})
 
 ## 문제 상황
 

@@ -5,21 +5,7 @@ permalink: /work-log/
 author_profile: true
 ---
 
-회사 내부 정보와 제품명은 제외하고, 실제 업무 중 다룬 구현/장애 대응/운영 개선 내용을 공개 가능한 수준으로 정리한 글입니다.
-
-읽는 사람이 특정 제품을 몰라도 작업 성격을 이해할 수 있도록, 기능명보다 문제 유형과 제가 맡은 구현 판단을 기준으로 묶었습니다.
-
-아래 항목은 별도의 Note/Error 글로 작성된 내용을 업무 흐름별로 다시 묶은 목록입니다.
-
-## 한눈에 보는 작업 범위
-
-- 보안 요구사항을 실제 기능, 이력 저장, 권한 검증, 운영 화면까지 연결해 구현했습니다.
-- 비밀번호/계정/스케줄처럼 실수 영향이 큰 운영 흐름에서 저장값 보존, 실패 이력, 재인증, 마스킹 처리를 정리했습니다.
-- 설정 암호화, KEK/DEK 구조, DRBG, JNI/native 연동처럼 보안 로직과 런타임 경계를 함께 다뤘습니다.
-- OpenSSL, Spring/Tomcat, DB 엔진처럼 기반 라이브러리와 실행 환경을 올리며 호환성 문제를 분리해서 확인했습니다.
-- 반복되는 연동 작업은 JSON 템플릿, CLI 자동화, 로컬 AI 세션 아카이브 같은 형태로 재사용 가능하게 정리했습니다.
-
-## 포트폴리오 사례형 글
+## 대표 문제 해결 기록
 
 - [성공 로그 뒤에 숨어 있던 동기화 불일치 추적기]({% post_url 2024-09-12-error-reported-success-sync-drift %})
 - [테스트 장비 없이 TLS 라이브러리 업그레이드를 검증한 방법]({% post_url 2025-06-26-note-tls-upgrade-validation-without-device %})
@@ -60,6 +46,8 @@ author_profile: true
 - [외부 동기화에서 기존 값이 덮어써지는 문제]({% post_url 2026-06-08-error-device-import-overwrite-guard %})
 - [CLI 기반 장비 자동화를 JSON 템플릿으로 확장한 기록]({% post_url 2026-07-02-note-network-device-json-template %})
 - [네트워크 진단이 ARP 캐시 때문에 실패처럼 보일 때]({% post_url 2026-07-09-error-device-ping-arp-retry %})
+- [HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기]({% post_url 2026-07-21-note-http-digest-camera-api-communication %})
+- [200 OK인데 gSOAP SOAP_NO_TAG가 나는 이유]({% post_url 2026-07-21-error-onvif-empty-soap-body-sunapi-body-check %})
 
 ## 업그레이드와 운영 안정성
 

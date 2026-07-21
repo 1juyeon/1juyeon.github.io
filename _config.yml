@@ -16,7 +16,7 @@
 title: STUDY
 email: wjy6454@naver.com
 description: >-
-  Java/Spring 백엔드, C/C++ JNI, 보안 기능, 네트워크 장비 연동과 개인 개발 도구의 구현 및 문제 해결 기록
+  백엔드, 네이티브 연동, 보안 기능, 외부 시스템 연동, 운영 자동화와 개인 개발 도구의 구현 및 문제 해결 기록
 github_username: 1juyeon
 minimal_mistakes_skin: default
 search: true
@@ -58,14 +58,20 @@ plugins:
 author:
   name   : "Juyeon Won"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Java/Spring 백엔드와 C/C++ JNI 연동을 다루는 3년차 개발자입니다."
+  bio    : "백엔드부터 네이티브·외부 시스템 연동, 보안 기능과 운영 자동화까지 제품 개발의 여러 영역을 경험한 4년차 개발자입니다."
   links:
+    - label: "Portfolio"
+      icon: "fas fa-fw fa-briefcase"
+      url: "https://1juyeon-portfolio.vercel.app/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/1juyeon"
 
 footer:
   links:
+    - label: "Portfolio"
+      icon: "fas fa-fw fa-briefcase"
+      url: "https://1juyeon-portfolio.vercel.app/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/1juyeon"

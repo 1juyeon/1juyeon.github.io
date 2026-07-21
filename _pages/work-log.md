@@ -8,7 +8,7 @@ author_profile: true
 ## 대표 문제 해결 기록
 
 - [성공 로그 뒤에 숨어 있던 동기화 불일치 추적기]({% post_url 2024-09-12-error-reported-success-sync-drift %})
-- [테스트 장비 없이 TLS 라이브러리 업그레이드를 검증한 방법]({% post_url 2025-06-26-note-tls-upgrade-validation-without-device %})
+- [실제 장비 테스트 전 TLS/libcurl 업그레이드 위험을 줄인 방법]({% post_url 2025-06-26-note-tls-upgrade-validation-without-device %})
 - [외부 SDK 초기화 실패를 원인 후보별로 쪼개 본 기록]({% post_url 2026-06-30-error-sdk-init-failure-checklist %})
 - [장비마다 다른 인증 방식 때문에 변경이 실패하던 문제]({% post_url 2025-07-01-error-auth-method-fallback %})
 - [세션 값을 복사했을 때 다른 계정으로 접근되던 문제]({% post_url 2024-05-22-error-session-cookie-copy-reuse %})
@@ -43,6 +43,9 @@ author_profile: true
 - [외부 연동 TLS 전환에서 인터페이스와 설정을 같이 맞춘 기록]({% post_url 2025-04-04-note-external-integration-tls-config %})
 - [네이티브 연동에서 긴 문자열 뒤에 쓰레기값이 붙던 문제]({% post_url 2025-04-08-error-native-string-buffer-garbage %})
 - [네이티브 DRBG 초기화 오류를 thread-local로 정리한 기록]({% post_url 2025-05-21-error-native-drbg-thread-local-init %})
+- [curl로 HTTPS API 인증 방식을 먼저 확인한 기록]({% post_url 2025-06-20-note-curl-api-test %})
+- [Windows curl에서 Digest 인증이 (94)로 실패한 문제]({% post_url 2025-06-25-error-digest-인증-실패-원인-분석-및-해결-흐름 %})
+- [Digest SHA-256 테스트를 위해 Windows용 curl/libcurl을 직접 빌드한 기록]({% post_url 2025-06-30-note-curl-openssl-직접-빌드-정리 %})
 - [외부 동기화에서 기존 값이 덮어써지는 문제]({% post_url 2026-06-08-error-device-import-overwrite-guard %})
 - [CLI 기반 장비 자동화를 JSON 템플릿으로 확장한 기록]({% post_url 2026-07-02-note-network-device-json-template %})
 - [네트워크 진단이 ARP 캐시 때문에 실패처럼 보일 때]({% post_url 2026-07-09-error-device-ping-arp-retry %})

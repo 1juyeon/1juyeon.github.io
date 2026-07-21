@@ -1,129 +1,137 @@
 ---
-title: "[Note] curl로 HTTPS API 인증 흐름을 점검한 기록"
+title: "[Note] curl로 HTTPS API 인증 방식을 먼저 확인한 기록"
 date: 2025-06-20 10:00:00 +0900
 categories: [note]
 tags: [curl, api, 인증, digest, basic]
 layout: single
 ---
 
-# curl로 HTTPS API 인증 흐름을 점검한 기록
+# curl로 HTTPS API 인증 방식을 먼저 확인한 기록
 
-curl을 사용해 인증이 필요한 HTTPS API를 점검하면서, Basic 인증과 Digest 인증의 차이, 실제 명령어, 디버깅 방법을 정리했다.
+## 상황
 
----
+장비나 외부 API를 연동할 때, 문서만 보고 바로 구현하면 생각보다 자주 막힌다.
 
-## 📌 인증 방식 개요
+특히 HTTPS API는 실패 원인이 여러 단계로 나뉜다.
 
-| 구분 | Basic 인증 | Digest 인증 |
-|------|-------------|---------------|
-| 전송 방식 | `username:password`를 Base64로 인코딩 | username, password, nonce 등을 이용해 해시값 생성 |
-| 보안 수준 | 낮음 (HTTPS 필수) | 중간 (비밀번호 직접 노출은 없음) |
-| 암호화 필요 | 반드시 HTTPS 필요 | HTTPS 없어도 해시 전송이므로 어느 정도 안전하지만 여전히 HTTPS 권장 |
-| curl 사용법 | `-u "id:pw"` | `--digest -u "id:pw"` |
-| 서버 요구 헤더 | `WWW-Authenticate: Basic ...` | `WWW-Authenticate: Digest ...` |
-| 장점 | 구현이 간단함 | 비밀번호 평문 노출이 없음 |
-| 단점 | 평문 인코딩(Base64), 쉽게 복호화 가능 | 복잡함, 일부 시스템 미지원 가능 |
+- 네트워크가 안 되는지
+- TLS 인증서에서 막히는지
+- Basic 인증을 요구하는지
+- Digest 인증을 요구하는지
+- 계정 정보가 틀린 것인지
+- API 경로나 파라미터가 틀린 것인지
 
----
+처음부터 애플리케이션 코드에 붙이면 어느 단계에서 실패했는지 보기 어렵다. 그래서 나는 먼저 `curl -v`로 서버가 어떤 인증 방식을 요구하는지 확인하는 순서를 잡았다.
 
-## 🔍 서버가 사용하는 인증 방식 확인
+## curl을 먼저 쓴 이유
 
-### 명령어
+`curl`은 HTTP 요청을 명령어로 바로 보내볼 수 있는 도구다.
+
+애플리케이션 코드보다 먼저 curl로 확인하면, 최소한 아래 내용을 빠르게 분리할 수 있다.
+
+| 확인할 것 | curl로 보는 방법 |
+| --- | --- |
+| 서버까지 연결되는지 | 응답 코드나 연결 오류 확인 |
+| TLS 인증서에서 막히는지 | `(60)`, certificate 관련 메시지 확인 |
+| 인증 방식이 무엇인지 | `WWW-Authenticate` 헤더 확인 |
+| Basic/Digest 중 무엇을 요구하는지 | `Basic`, `Digest` 문자열 확인 |
+| 계정 정보가 적용되는지 | 인증 옵션을 바꿔가며 응답 비교 |
+
+이 단계에서 중요한 건 API 성공보다 **실패 위치를 나누는 것**이었다.
+
+## 1. 인증 없이 먼저 요청했다
+
+처음에는 일부러 인증 정보를 넣지 않고 요청했다.
+
 ```bash
-curl -v -k "https://[서버주소]/api"
+curl -vk "https://<device-host>/<api-path>"
 ```
 
-### 결과 예시
+`-v`는 요청과 응답 헤더를 자세히 출력한다.
+`-k`는 테스트 환경에서 서버 인증서 검증을 임시로 건너뛰는 옵션이다. 운영 환경에서 무조건 쓰는 옵션은 아니다.
 
-#### [1] Digest 인증을 사용하는 경우
+인증이 필요한 API라면 보통 아래처럼 `401 Unauthorized`가 나온다.
+
 ```http
 HTTP/1.1 401 Unauthorized
-WWW-Authenticate: Digest realm="Device", nonce="abc123", qop="auth"
+WWW-Authenticate: Digest realm="Device", nonce="...", qop="auth"
 ```
 
-#### [2] Basic 인증을 사용하는 경우
+여기서 `401`만 보고 실패라고 끝내면 안 된다. 이 응답은 서버가 "이 방식으로 인증해서 다시 요청해라"라고 알려주는 단계일 수 있다.
+
+## 2. Basic과 Digest를 구분했다
+
+`WWW-Authenticate` 헤더를 보면 서버가 요구하는 인증 방식을 알 수 있다.
+
 ```http
-HTTP/1.1 401 Unauthorized
 WWW-Authenticate: Basic realm="Device"
 ```
 
----
+이렇게 나오면 Basic 인증이다.
 
-## 🧪 curl 명령어 비교
-
-### ✅ 1. Basic 인증 방식 (서버가 Basic을 요구할 때)
-```bash
-curl -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
+```http
+WWW-Authenticate: Digest realm="Device", nonce="...", qop="auth"
 ```
 
-### ✅ 2. Digest 인증 방식 (서버가 Digest를 요구할 때)
-```bash
-curl --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
-```
+이렇게 나오면 Digest 인증이다.
 
-### 🔍 3. 인증 방식 및 요청 흐름 로그 확인
-```bash
-curl -v -u "<user>:<password>" -k "https://..."
-```
+Basic은 `아이디:비밀번호` 값을 Base64로 인코딩해서 보내는 방식이다. Base64는 암호화가 아니라 단순 인코딩이라서, HTTP에서는 사용하면 안 되고 HTTPS가 전제되어야 한다.
 
-- `-v` : 요청 및 응답 헤더 전체 출력
-- `-k` : 인증서 검증 생략 (사설 인증서 허용)
-- `-u` : 사용자 인증 정보
-- `--digest` : Digest 방식 명시 (필요한 경우만)
+Digest는 비밀번호 원문을 바로 보내지 않고, 서버가 준 `nonce` 같은 값을 섞어서 해시를 만들어 보내는 방식이다. Basic보다 안전하지만, 클라이언트 라이브러리나 서버가 지원하는 알고리즘에 따라 호환성 문제가 날 수 있다.
 
----
+## 3. 인증 방식에 맞게 다시 요청했다
 
-## 🧾 인증 실패 시 확인할 사항
-
-| 체크 항목 | 설명 |
-|-----------|------|
-| 🔑 비밀번호에 특수문자 포함 여부 | `!`, `^`, `&` 등은 cmd에서 오동작 가능 → `"비밀번호"`로 감싸기 |
-| 🧷 잘못된 인증 방식 사용 | Digest인데 Basic 쓰거나, 반대로 사용한 경우 |
-| 🔁 서버 응답 로그 확인 | `curl -v`로 `WWW-Authenticate:` 헤더 분석 |
-| 📶 인증 정보 오타 | 붙여넣기 대신 직접 타이핑 시도 |
-| 💻 명령어 실행 환경 | CMD에서 특수문자 문제 시 PowerShell로 시도 |
-
----
-
-## 🛡️ 보안 참고
-
-- Basic 인증은 반드시 HTTPS와 함께 사용해야 함
-- Digest도 완전한 보안은 아니며 중요한 API에는 JWT, OAuth 등을 고려해야 함
-- `-k`는 **사설 인증서 테스트 용도로만 사용**하며, 운영 환경에서는 피할 것
-
----
-
-## 📁 기타: 인증서 관련 질문에 대한 답변 요약
-
-### 🔸 인증서 파일을 다른 대상에 복사하면?
-- 단순히 `.crt` 또는 `.pem`만 복사해도 **다른 대상의 내부 정보는 알 수 없음**
-- 다만, 개인키까지 함께 복사하면 **클라이언트 가장 가능성** 존재
-- 일반적으로는 **대상 시스템의 인증 정보, 설정, 비밀번호 등은 포함되어 있지 않음**
-
----
-
-## 📌 요약 정리표
-
-| 목적 | 명령어 |
-|------|--------|
-| 인증 없이 서버 인증 방식 확인 | `curl -v -k "https://..."` |
-| Basic 인증으로 요청 | `curl -u "<user>:<password>" -k "https://..."` |
-| Digest 인증으로 요청 | `curl --digest -u "<user>:<password>" -k "https://..."` |
-| 디버깅 및 인증 로그 확인 | `curl -v -u "<user>:<password>" -k "https://..."` |
-
----
-
-## ✍️ 예시로 복습해보기
+Basic 인증이면 아래처럼 요청했다.
 
 ```bash
-# 인증 없이 서버 인증 방식 확인
-curl -v -k "https://<device-host>/<api-path>/system.cgi?..."
-
-# 서버가 Basic이라면 이렇게 요청
-curl -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
-
-# 서버가 Digest라면 이렇게 요청
-curl --digest -u "<user>:<password>" -k "https://<device-host>/<api-path>/system.cgi?..."
+curl -vk -u "<user>:<password>" "https://<device-host>/<api-path>"
 ```
 
----
+Digest 인증이면 `--digest`를 붙여서 요청했다.
+
+```bash
+curl -vk --digest -u "<user>:<password>" "https://<device-host>/<api-path>"
+```
+
+여기서 계정 문자열은 항상 따옴표로 감쌌다. 비밀번호에 `!`, `^`, `&` 같은 문자가 있으면 Windows CMD나 PowerShell에서 다르게 해석될 수 있기 때문이다.
+
+## 4. 실패 메시지를 단계별로 나눴다
+
+같은 실패처럼 보여도 의미가 다르다.
+
+| 결과 | 내가 본 의미 |
+| --- | --- |
+| `curl: (6)` | 호스트 이름을 찾지 못함 |
+| `curl: (7)` | 대상 포트로 연결 실패 |
+| `curl: (60)` | 서버 인증서 검증 실패 |
+| `401 Unauthorized` + `WWW-Authenticate` | 인증 방식 확인 가능, 재요청 필요 |
+| `401 Unauthorized`가 계속 반복 | 계정 정보, 인증 방식, Digest 계산값 확인 필요 |
+| `curl: (94)` | Windows 인증 처리 또는 Digest 호환성 문제 가능성 |
+
+이렇게 정리해두면 "안 된다"라는 말 대신 "TLS에서 막혔다", "HTTP 인증까지는 갔다", "Digest 처리에서 막힌다"처럼 말할 수 있다.
+
+## 내가 실제로 남긴 확인 순서
+
+```text
+1. curl -vk로 연결과 인증 요구 헤더 확인
+2. WWW-Authenticate에서 Basic/Digest 구분
+3. Basic이면 -u 옵션만 사용
+4. Digest이면 --digest -u 옵션 사용
+5. 인증서 오류와 인증 오류를 분리
+6. 그래도 실패하면 curl --version으로 TLS/인증 백엔드 확인
+```
+
+처음에는 `curl` 명령어 하나로만 보면 될 줄 알았는데, 실제로는 `-v` 로그를 읽는 것이 더 중요했다.
+
+특히 `401 Unauthorized`가 항상 최종 실패는 아니라는 점을 알게 된 뒤부터는, 인증 문제를 볼 때 먼저 헤더를 확인하게 됐다.
+
+## 관련해서 이어진 글
+
+- [Digest SHA-256 테스트를 위해 Windows용 curl/libcurl을 직접 빌드한 기록]({% post_url 2025-06-30-note-curl-openssl-직접-빌드-정리 %})
+- [HTTP Digest와 네트워크 카메라 API 통신 구조 이해하기]({% post_url 2026-07-21-note-http-digest-camera-api-communication %})
+
+## 정리
+
+이 기록은 curl 사용법을 외우기 위한 글이라기보다, HTTPS API 연동에서 실패 위치를 먼저 나누기 위해 남긴 것이다.
+
+내가 한 일은 API를 바로 코드에 붙이기 전에, 서버가 요구하는 인증 방식과 TLS 실패 여부를 명령어로 분리해본 것이다. 이 순서를 만들어두니 이후 Digest 인증 실패나 TLS 라이브러리 문제를 볼 때도 원인 후보를 훨씬 빨리 줄일 수 있었다.

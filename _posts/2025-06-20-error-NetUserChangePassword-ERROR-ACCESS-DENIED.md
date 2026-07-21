@@ -209,7 +209,7 @@ Windows 로그 > 보안
 
 ---
 
-## 📝 7. 블로그/보고서용 요약 문구
+## 📝 7. 요약
 
 > Windows 11 24H2에서는 `NetUserChangePassword` 함수가 내부 보안 정책 강화로 인해 관리자 권한 및 IPC 인증을 모두 충족하더라도 `ERROR_ACCESS_DENIED` 오류가 발생할 수 있으며, 이는 MS 내부 정책 변경에 기인한 것으로 추정된다.
 

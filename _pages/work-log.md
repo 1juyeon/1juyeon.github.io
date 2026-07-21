@@ -58,8 +58,3 @@ author_profile: true
 - [오래된 라이브러리 업그레이드를 단계별로 나눠 진행한 기록]({% post_url 2026-07-10-note-library-upgrade-staging %})
 - [DB 엔진 업그레이드에서 백업 스크립트까지 같이 본 이유]({% post_url 2026-07-14-note-database-upgrade-backup-script %})
 - [Spring과 Tomcat 업그레이드에서 javax와 jakarta를 먼저 봐야 하는 이유]({% post_url 2026-05-20-note-javax-jakarta-upgrade-decision %})
-
-## AI 도구와 개인 자동화
-
-- [Streamlit AI 트러블슈팅 앱에서 벡터 검색 방식을 바꾼 기록]({% post_url 2025-09-19-note-streamlit-vector-search-faiss %})
-- [로컬 AI 세션 아카이버에 Codex 로그와 이미지 보존을 추가한 기록]({% post_url 2026-07-16-note-local-ai-session-archive-codex-images %})
